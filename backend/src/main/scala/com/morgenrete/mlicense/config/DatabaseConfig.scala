@@ -1,6 +1,6 @@
 package com.morgenrete.mlicense.config
 
-import com.morgenrete.mlicense.util.ConfigWithDefaults
+import com.morgenrete.mlicense.common.api.ConfigWithDefaults
 import com.typesafe.config.Config
 
 /**

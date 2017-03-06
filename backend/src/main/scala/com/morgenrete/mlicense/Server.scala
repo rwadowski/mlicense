@@ -2,9 +2,9 @@ package com.morgenrete.mlicense
 
 import akka.actor.ActorSystem
 import akka.http.scaladsl.Http
-import akka.stream.ActorMaterializer
-import com.morgenrete.mlicense.config.{DatabaseConfig, LicenseConfig, ServerConfig}
-import com.typesafe.config.{Config, ConfigFactory}
+import akka.stream.{ActorMaterializer, Materializer}
+import com.morgenrete.mlicense.config.MLicenseConfig
+import com.typesafe.config.ConfigFactory
 import com.typesafe.scalalogging.StrictLogging
 
 import scala.util.{Failure, Success}
@@ -12,15 +12,13 @@ import scala.util.{Failure, Success}
 /**
   * Created by rwadowski on 3/1/17.
   */
-class Server extends Routes with StrictLogging {
+class Server extends Routes with Wiring with StrictLogging {
 
-  private implicit val system = ActorSystem()
-  private implicit val materializer = ActorMaterializer()
+  implicit val system = ActorSystem()
+  implicit val materializer: Materializer = ActorMaterializer()
   import system.dispatcher
 
-  private lazy val config = new DatabaseConfig with LicenseConfig with ServerConfig {
-    override val rootConfig: Config = ConfigFactory.load()
-  }
+  override lazy val config: MLicenseConfig = new MLicenseConfig(ConfigFactory.load())
 
   def start(): Unit = {
     val startFuture = Http().bindAndHandle(routes, config.host, config.port)

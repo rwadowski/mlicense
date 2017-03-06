@@ -1,4 +1,4 @@
-package com.morgenrete.mlicense.util
+package com.morgenrete.mlicense.common.api
 
 import java.util.concurrent.TimeUnit
 
