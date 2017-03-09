@@ -4,24 +4,23 @@ import java.time.{Instant, ZoneOffset}
 import java.util.UUID
 
 import com.morgenrete.mlicense.common.Utils
+import com.morgenrete.mlicense.email.application.{EmailService, EmailTemplatingEngine}
 import com.morgenrete.mlicense.user.UserId
-import com.morgenrete.mlicense.user.domain.{BasicUserData, LoginInput, RegistrationInput, User}
+import com.morgenrete.mlicense.user.domain.{BasicUserData, User}
 
 import scala.concurrent.{ExecutionContext, Future}
 
-/**
-  * Created by rwadowski on 3/5/17.
-  */
-class UserService(userDao: UserDao)(implicit ec: ExecutionContext) {
+class UserService(
+                   userDao: UserDao,
+                   emailService: EmailService,
+                   emailTemplatingEngine: EmailTemplatingEngine
+                 )(implicit ec: ExecutionContext) {
 
   def findById(userId: UserId): Future[Option[BasicUserData]] = {
     userDao.findBasicDataById(userId)
   }
 
-  def registerNewUser(in: RegistrationInput): Future[UserRegisterResult] = {
-    val login = in.login
-    val email = in.email
-    val password = in.password
+  def registerNewUser(login: String, email: String, password: String): Future[UserRegisterResult] = {
     def checkUserExistence(): Future[Either[String, Unit]] = {
       val existingLoginFuture = userDao.findByLowerCasedLogin(login)
       val existingEmailFuture = userDao.findByEmail(email)
@@ -42,6 +41,11 @@ class UserService(userDao: UserDao)(implicit ec: ExecutionContext) {
         val salt = Utils.randomString(128)
         val now = Instant.now().atOffset(ZoneOffset.UTC)
         val userAddResult = userDao.add(User.withRandomUUID(login, email.toLowerCase, password, salt, now))
+        userAddResult.onSuccess {
+          case _ =>
+            val confirmationEmail = emailTemplatingEngine.registrationConfirmation(login)
+            emailService.scheduleEmail(email, confirmationEmail)
+        }
         userAddResult.map(_ => UserRegisterResult.Success)
     }
 
@@ -51,11 +55,34 @@ class UserService(userDao: UserDao)(implicit ec: ExecutionContext) {
     )
   }
 
-  def authenticate(loginInput: LoginInput): Future[Option[BasicUserData]] = {
-    val login = loginInput.login
-    val nonEncryptedPassword = loginInput.password
+  def authenticate(login: String, nonEncryptedPassword: String): Future[Option[BasicUserData]] = {
     userDao.findByLoginOrEmail(login).map(userOpt =>
       userOpt.filter(u => User.passwordsMatch(nonEncryptedPassword, u)).map(BasicUserData.fromUser))
+  }
+
+  def changeLogin(userId: UUID, newLogin: String): Future[Either[String, Unit]] = {
+    userDao.findByLowerCasedLogin(newLogin).flatMap {
+      case Some(_) => Future.successful(Left("Login is already taken"))
+      case None => userDao.changeLogin(userId, newLogin).map(Right(_))
+    }
+  }
+
+  def changeEmail(userId: UUID, newEmail: String): Future[Either[String, Unit]] = {
+    userDao.findByEmail(newEmail).flatMap {
+      case Some(_) => Future.successful(Left("E-mail used by another user"))
+      case None => userDao.changeEmail(userId, newEmail).map(Right(_))
+    }
+  }
+
+  def changePassword(userId: UUID, currentPassword: String, newPassword: String): Future[Either[String, Unit]] = {
+    userDao.findById(userId).flatMap {
+      case Some(u) => if (User.passwordsMatch(currentPassword, u)) {
+        userDao.changePassword(u.id, User.encryptPassword(newPassword, u.salt)).map(Right(_))
+      }
+      else Future.successful(Left("Current password is invalid"))
+
+      case None => Future.successful(Left("User not found hence cannot change password"))
+    }
   }
 }
 
@@ -90,3 +117,4 @@ object UserRegisterValidator {
 
   private def validPassword(password: String) = if (password.nonEmpty) ValidationOk else Left("Password cannot be empty!")
 }
+

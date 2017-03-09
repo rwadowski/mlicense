@@ -7,9 +7,6 @@ import akka.stream.Materializer
 import io.circe._
 import io.circe.jawn.decode
 
-/**
-  * Created by rwadowski on 3/4/17. Taken from http://bootzooka.softwaremill.com/#/
-  */
 trait JsonSupport extends CirceEncoders {
 
   implicit def materializer: Materializer

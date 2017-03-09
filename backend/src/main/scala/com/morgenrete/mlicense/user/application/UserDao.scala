@@ -9,15 +9,13 @@ import com.morgenrete.mlicense.user.domain.{BasicUserData, User}
 
 import scala.concurrent.{ExecutionContext, Future}
 
-/**
-  * Created by rwadowski on 3/5/17.
-  */
 class UserDao(protected val database: SqlDatabase)(implicit val ec: ExecutionContext) extends SqlUserSchema {
 
   import database._
   import database.driver.api._
+  import com.morgenrete.mlicense.common.FutureHelpers._
 
-  def add(user: User): Future[Unit] = db.run(users += user).map(_ => ())
+  def add(user: User): Future[Unit] = db.run(users += user).mapToUnit
 
   def findById(userId: UserId): Future[Option[User]] = findOneWhere(_.id === userId)
 
@@ -33,6 +31,21 @@ class UserDao(protected val database: SqlDatabase)(implicit val ec: ExecutionCon
   def findByLoginOrEmail(loginOrEmail: String): Future[Option[User]] = {
     findByLowerCasedLogin(loginOrEmail).flatMap(userOpt =>
       userOpt.map(user => Future.successful(Some(user))).getOrElse(findByEmail(loginOrEmail)))
+  }
+
+  def changePassword(userId: UserId, newPassword: String): Future[Unit] = {
+    db.run(users.filter(_.id === userId).map(_.password).update(newPassword)).mapToUnit
+  }
+
+  def changeLogin(userId: UserId, newLogin: String): Future[Unit] = {
+    val action = users.filter(_.id === userId).map { user =>
+      (user.login, user.loginLowerCase)
+    }.update((newLogin, newLogin.toLowerCase))
+    db.run(action).mapToUnit
+  }
+
+  def changeEmail(userId: UserId, newEmail: String): Future[Unit] = {
+    db.run(users.filter(_.id === userId).map(_.email).update(newEmail)).mapToUnit
   }
 }
 

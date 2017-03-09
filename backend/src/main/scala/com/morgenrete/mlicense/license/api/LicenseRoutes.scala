@@ -3,10 +3,7 @@ package com.morgenrete.mlicense.license.api
 import akka.http.scaladsl.server.Directives._
 import com.typesafe.scalalogging.StrictLogging
 
-/**
-  * Created by rwadowski on 3/2/17.
-  */
-trait LicenseRouter extends StrictLogging {
+trait LicenseRoutes extends StrictLogging {
 
   val licenseRoutes = pathPrefix("license") {
     pathPrefix(Segment) { appId =>

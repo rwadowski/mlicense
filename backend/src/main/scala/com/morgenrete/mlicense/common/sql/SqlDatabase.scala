@@ -11,9 +11,6 @@ import org.flywaydb.core.Flyway
 import slick.driver.JdbcProfile
 import slick.jdbc.JdbcBackend._
 
-/**
-  * Created by rwadowski on 3/5/17.
-  */
 case class SqlDatabase(db: slick.jdbc.JdbcBackend.Database,
                        driver: JdbcProfile,
                        connectionString: JdbcConnectionString) {

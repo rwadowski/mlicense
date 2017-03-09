@@ -8,9 +8,6 @@ import akka.http.scaladsl.model.StatusCodes.ClientError
 import io.circe._
 import io.circe.syntax._
 
-/**
-  * Created by rwadowski on 3/4/17. Taken from http://bootzooka.softwaremill.com/#/
-  */
 trait CirceEncoders {
 
   val dateTimeFormat = DateTimeFormatter.ISO_DATE_TIME

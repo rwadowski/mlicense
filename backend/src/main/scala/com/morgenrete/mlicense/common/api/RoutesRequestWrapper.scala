@@ -5,9 +5,6 @@ import akka.http.scaladsl.server.Directives._
 import akka.http.scaladsl.server.{ExceptionHandler, RejectionHandler}
 import com.typesafe.scalalogging.StrictLogging
 
-/**
-  * Created by rwadowski on 3/2/17.
-  */
 trait RoutesRequestWrapper extends StrictLogging {
 
   private val exceptionHandler = ExceptionHandler {

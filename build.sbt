@@ -68,3 +68,5 @@ lazy val rootProject = (project in file("."))
   )
   .dependsOn(backend, frontend)
   .aggregate(backend, frontend)
+
+parallelExecution in Test := false

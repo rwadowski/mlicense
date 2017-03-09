@@ -4,9 +4,6 @@ import java.util.concurrent.TimeUnit
 
 import com.typesafe.config.Config
 
-/**
-  * Created by rwadowski on 3/2/17.
-  */
 trait ConfigWithDefaults {
 
   def rootConfig: Config

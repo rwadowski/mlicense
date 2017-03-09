@@ -3,9 +3,6 @@ package com.morgenrete.mlicense.config
 import com.morgenrete.mlicense.common.api.ConfigWithDefaults
 import com.typesafe.config.Config
 
-/**
-  * Created by rwadowski on 3/2/17.
-  */
 trait DatabaseConfig extends ConfigWithDefaults {
   import DatabaseConfig._
 

@@ -8,25 +8,25 @@ import javax.crypto.spec.PBEKeySpec
 import com.morgenrete.mlicense.common.Utils
 import com.morgenrete.mlicense.user.UserId
 
-/**
-  * Created by rwadowski on 3/4/17.
-  */
-case class User(id: UserId,
-                login: String,
-                loginLowerCased: String,
-                email: String,
-                password: String,
-                salt: String,
-                createdOn: OffsetDateTime)
+case class User(
+                 id: UserId,
+                 login: String,
+                 loginLowerCased: String,
+                 email: String,
+                 password: String,
+                 salt: String,
+                 createdOn: OffsetDateTime
+               )
 
 object User {
+
   def withRandomUUID(
-    login: String,
-    email: String,
-    plainPassword: String,
-    salt: String,
-    createdOn: OffsetDateTime
-  ) = User(UUID.randomUUID(), login, login.toLowerCase, email, encryptPassword(plainPassword, salt), salt, createdOn)
+                      login: String,
+                      email: String,
+                      plainPassword: String,
+                      salt: String,
+                      createdOn: OffsetDateTime
+                    ) = User(UUID.randomUUID(), login, login.toLowerCase, email, encryptPassword(plainPassword, salt), salt, createdOn)
 
   def encryptPassword(password: String, salt: String): String = {
     // 10k iterations takes about 10ms to encrypt a password on a 2013 MacBook
@@ -47,8 +47,4 @@ case class BasicUserData(id: UserId, login: String, email: String, createdOn: Of
 
 object BasicUserData {
   def fromUser(user: User) = new BasicUserData(user.id, user.login, user.email, user.createdOn)
-}
-
-case class RegistrationInput(login: String, email: String, password: String) {
-  lazy val loginEscaped: String = Utils.escapeHtml(login)
 }
