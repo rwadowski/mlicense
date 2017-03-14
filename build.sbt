@@ -103,15 +103,14 @@ lazy val rootProject = (project in file("."))
     packageDescription := "License server for applications with multiple lines.",
     maintainer := "Robert Wadowski <robert.wadowski@morgenrete.com>",
     mainClass in Compile := Some("com.morgenrete.mlicense.Main"),
-    mappings in Universal ++= ((packageBin in Compile, baseDirectory) map { (_, base) =>
-      val resources = base / "backend" / "src" / "main" / "resources"
+    mappings in Universal ++= {
+      val resources = baseDirectory.value / "backend" / "src" / "main" / "resources"
       val conf = resources / "application.conf"
       val logback = resources / "logback.xml"
-      val templates = resources / "templates"
-      val db = resources / "db"
-      Seq(conf -> "conf/application.conf", logback -> "conf/logback.xml",
-        templates -> "conf/templates", db -> "conf/db")
-    }).value
+      Seq(conf -> "conf/application.conf", logback -> "conf/logback.xml")
+    },
+    mappings in Universal ++= directory( baseDirectory.value / "backend" / "src" / "main" / "resources" / "db" ),
+    mappings in Universal ++= directory( baseDirectory.value / "backend" / "src" / "main" / "resources" / "templates" )
   )
   .dependsOn(backend, frontend)
   .aggregate(backend, frontend)
