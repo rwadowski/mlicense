@@ -1,3 +1,7 @@
+import sbt.complete.DefaultParsers.spaceDelimited
+import NativePackagerHelper._
+import com.typesafe.sbt.SbtNativePackager.packageArchetype
+
 val slf4jVersion = "1.7.21"
 val logBackVersion = "1.1.7"
 val scalaLoggingVersion = "3.5.0"
@@ -43,28 +47,71 @@ val akkaStack = Seq(akkaHttpCore, akkaHttpExperimental, akkaHttpTestkit, akkaHtt
 
 val commonDependencies = unitTestingStack ++ loggingStack
 
+lazy val updateNpm = taskKey[Unit]("Update npm")
+lazy val npmTask = inputKey[Unit]("Run npm with arguments")
+
 lazy val commonSettings = Seq(
-  version := "0.0.1",
   scalaVersion := "2.11.8",
   scalacOptions ++= Seq("-unchecked", "-deprecation"),
-  libraryDependencies ++= commonDependencies
+  libraryDependencies ++= commonDependencies,
+  updateNpm := {
+    println("Updating npm dependencies")
+    haltOnCmdResultError(Process("npm install", baseDirectory.value / ".." / "frontend").!)
+    println("Updating yarn dependencies")
+    haltOnCmdResultError(Process("yarn install", baseDirectory.value / ".." / "frontend").!)
+    println("Done")
+  },
+  npmTask := {
+    val taskName = spaceDelimited("<arg>").parsed.mkString(" ")
+    updateNpm.value
+    val localNpmCommand = "npm " + taskName
+    def buildWebpack() = {
+      Process(localNpmCommand, baseDirectory.value / ".." / "frontend").!
+    }
+    println("Building with Webpack : " + taskName)
+    haltOnCmdResultError(buildWebpack())
+  }
 )
+
+def haltOnCmdResultError(result: Int) {
+  if (result != 0) {
+    throw new Exception("Build failed.")
+  }
+}
 
 lazy val backend: Project = (project in file("backend"))
     .settings(commonSettings)
     .settings(
       libraryDependencies ++= slickStack ++ akkaStack ++ circe ++ Seq(javaxMailSun, typesafeConfig),
-      mainClass in (Compile, run) := Some("com.morgenrete.mlicense.Main")
+      unmanagedResourceDirectories in Compile := {
+        (unmanagedResourceDirectories in Compile).value ++ List(baseDirectory.value.getParentFile / frontend.base.getName / "dist" / "dev")
+      },
+      compile in Compile := (compile in Compile).dependsOn(npmTask.toTask(" run build.dev")).value
     )
 
 lazy val frontend: Project = (project in file("frontend"))
     .settings(commonSettings)
+    .settings(test in Test := (test in Test).dependsOn(npmTask.toTask(" test")).value)
 
 lazy val rootProject = (project in file("."))
+  .enablePlugins(JavaServerAppPackaging)
   .settings(commonSettings: _*)
   .settings(
     name := "MLicense",
-    mainClass in (Compile, run) := (mainClass in (Compile, run) in backend).value
+    version := "0.0.1",
+    packageSummary := "Simple license server",
+    packageDescription := "License server for applications with multiple lines.",
+    maintainer := "Robert Wadowski <robert.wadowski@morgenrete.com>",
+    mainClass in Compile := Some("com.morgenrete.mlicense.Main"),
+    mappings in Universal ++= ((packageBin in Compile, baseDirectory) map { (_, base) =>
+      val resources = base / "backend" / "src" / "main" / "resources"
+      val conf = resources / "application.conf"
+      val logback = resources / "logback.xml"
+      val templates = resources / "templates"
+      val db = resources / "db"
+      Seq(conf -> "conf/application.conf", logback -> "conf/logback.xml",
+        templates -> "conf/templates", db -> "conf/db")
+    }).value
   )
   .dependsOn(backend, frontend)
   .aggregate(backend, frontend)
