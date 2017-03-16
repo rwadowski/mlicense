@@ -14,6 +14,9 @@ trait Routes extends LicenseRoutes with UsersRoutes with RoutesRequestWrapper {
     pathPrefix("mlicense") {
       licenseRoutes ~
         usersRoutes
-    }
+    } ~ getFromResourceDirectory("prod") ~
+      path("") {
+        getFromResource("prod/index.html")
+      }
   }
 }
