@@ -54,6 +54,7 @@ lazy val commonSettings = Seq(
   scalaVersion := "2.11.8",
   scalacOptions ++= Seq("-unchecked", "-deprecation"),
   libraryDependencies ++= commonDependencies,
+  parallelExecution in Test := false,
   updateNpm := {
     println("Updating npm dependencies")
     haltOnCmdResultError(Process("npm install", baseDirectory.value / ".." / "frontend").!)
@@ -74,7 +75,7 @@ lazy val commonSettings = Seq(
 )
 
 def haltOnCmdResultError(result: Int) {
-  if (result != 0) {
+  if(result != 0) {
     throw new Exception("Build failed.")
   }
 }
@@ -86,9 +87,9 @@ lazy val backend: Project = (project in file("backend"))
       unmanagedResourceDirectories in Compile := {
         (unmanagedResourceDirectories in Compile).value ++ List(baseDirectory.value.getParentFile / frontend.base.getName / "dist" )
       },
-      packageBin in Compile := {
+      (compile in Compile) := {
         npmTask.toTask(" run build.prod").value
-        (packageBin in Compile).value
+        (compile in Compile).value
       }
     )
 
@@ -117,5 +118,3 @@ lazy val rootProject = (project in file("."))
   )
   .dependsOn(backend, frontend)
   .aggregate(backend, frontend)
-
-parallelExecution in Test := false
