@@ -8,20 +8,18 @@ import javax.crypto.spec.PBEKeySpec
 import com.morgenrete.mlicense.common.Utils
 import com.morgenrete.mlicense.user.UserId
 
-case class User(
-                 id: UserId,
-                 login: String,
-                 loginLowerCased: String,
-                 email: String,
-                 password: String,
-                 salt: String,
-                 createdOn: OffsetDateTime
+case class User(id: UserId,
+                login: String,
+                loginLowerCased: String,
+                email: String,
+                password: String,
+                salt: String,
+                createdOn: OffsetDateTime
                )
 
 object User {
 
-  def withRandomUUID(
-                      login: String,
+  def withRandomUUID(login: String,
                       email: String,
                       plainPassword: String,
                       salt: String,

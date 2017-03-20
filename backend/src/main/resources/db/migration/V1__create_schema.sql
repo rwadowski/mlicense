@@ -33,3 +33,32 @@ ALTER TABLE "remember_me_tokens" ADD CONSTRAINT "remember_me_tokens_id" PRIMARY 
 ALTER TABLE "remember_me_tokens" ADD CONSTRAINT "remember_me_tokens_user_fk"
   FOREIGN KEY("user_id") REFERENCES "users"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 CREATE UNIQUE INDEX "remember_me_tokens_selector" ON "remember_me_tokens"("selector");
+
+-- CUSTOMERS
+CREATE TABLE "customers" (
+  "id" UUID NOT NULL,
+  "name" VARCHAR NOT NULL
+);
+ALTER TABLE "customers" ADD CONSTRAINT "customers_id" PRIMARY KEY("id");
+
+-- APPLICATIONS
+CREATE TABLE "applications" (
+  "id" UUID NOT NULL,
+  "name" VARCHAR NOT NULL
+);
+ALTER TABLE "applications" ADD CONSTRAINT "applications_id" PRIMARY KEY("id");
+
+-- LICENSES
+CREATE TABLE "licenses" (
+  "id" UUID NOT NULL,
+  "user_id" UUID NOT NULL,
+  "application_id" UUID NOT NULL,
+  "customer_id" UUID NOT NULL,
+  "active" BOOLEAN DEFAULT FALSE,
+  "expiration_date" TIMESTAMP
+);
+
+ALTER TABLE "licenses" ADD CONSTRAINT "license_id" PRIMARY KEY("id");
+ALTER TABLE "licenses" ADD CONSTRAINT "USR_FK" FOREIGN  KEY ("user_id") REFERENCES "users"("id");
+ALTER TABLE "licenses" ADD CONSTRAINT "APP_FK" FOREIGN  KEY ("application_id") REFERENCES "applications"("id");
+ALTER TABLE "licenses" ADD CONSTRAINT "CUS_FK" FOREIGN  KEY ("customer_id") REFERENCES "customers"("id");

@@ -11,9 +11,9 @@ import scala.concurrent.{ExecutionContext, Future}
 
 class UserDao(protected val database: SqlDatabase)(implicit val ec: ExecutionContext) extends SqlUserSchema {
 
+  import com.morgenrete.mlicense.common.FutureHelpers._
   import database._
   import database.driver.api._
-  import com.morgenrete.mlicense.common.FutureHelpers._
 
   def add(user: User): Future[Unit] = db.run(users += user).mapToUnit
 
@@ -59,6 +59,7 @@ trait SqlUserSchema {
   protected val users: TableQuery[Users] = TableQuery[Users]
 
   protected class Users(tag: Tag) extends Table[User](tag, "users") {
+
     def id              = column[UUID]("id", O.PrimaryKey)
     def login           = column[String]("login")
     def loginLowerCase  = column[String]("login_lowercase")
