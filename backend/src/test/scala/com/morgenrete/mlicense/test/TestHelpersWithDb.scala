@@ -2,6 +2,8 @@ package com.morgenrete.mlicense.test
 
 import com.morgenrete.mlicense.common.sql.SqlDatabase
 import com.morgenrete.mlicense.email.application.{DummyEmailService, EmailTemplatingEngine}
+import com.morgenrete.mlicense.license.application.{ApplicationDao, CustomerDao}
+import com.morgenrete.mlicense.license.domain.{Application, Customer}
 import com.morgenrete.mlicense.user.application.{UserDao, UserService}
 import com.morgenrete.mlicense.user.domain.User
 import org.scalatest.concurrent.ScalaFutures
@@ -13,6 +15,8 @@ trait TestHelpersWithDb extends TestHelpers with ScalaFutures {
   lazy val emailService = new DummyEmailService
   lazy val emailTemplatingEngine = new EmailTemplatingEngine
   lazy val userDao = new UserDao(sqlDatabase)
+  lazy val applicationDao = new ApplicationDao(sqlDatabase)
+  lazy val customerDao = new CustomerDao(sqlDatabase)
   lazy val userService = new UserService(userDao, emailService, emailTemplatingEngine)
 
   def sqlDatabase: SqlDatabase
@@ -23,5 +27,17 @@ trait TestHelpersWithDb extends TestHelpers with ScalaFutures {
     val u = newRandomUser(password)
     userDao.add(u).futureValue
     u
+  }
+
+  def newRandomStoredApplication: Application = {
+    val application = newRandomApplication
+    applicationDao.add(application).futureValue
+    application
+  }
+
+  def newRandomStoredCustomer: Customer = {
+    val customer = newRandomCustomer
+    customerDao.add(customer).futureValue
+    customer
   }
 }

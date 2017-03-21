@@ -59,6 +59,6 @@ CREATE TABLE "licenses" (
 );
 
 ALTER TABLE "licenses" ADD CONSTRAINT "license_id" PRIMARY KEY("id");
-ALTER TABLE "licenses" ADD CONSTRAINT "USR_FK" FOREIGN  KEY ("user_id") REFERENCES "users"("id");
-ALTER TABLE "licenses" ADD CONSTRAINT "APP_FK" FOREIGN  KEY ("application_id") REFERENCES "applications"("id");
-ALTER TABLE "licenses" ADD CONSTRAINT "CUS_FK" FOREIGN  KEY ("customer_id") REFERENCES "customers"("id");
+ALTER TABLE "licenses" ADD CONSTRAINT "license_user_id_fk" FOREIGN KEY ("user_id") REFERENCES "users"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+ALTER TABLE "licenses" ADD CONSTRAINT "license_application_id_fk" FOREIGN KEY ("application_id") REFERENCES "applications"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+ALTER TABLE "licenses" ADD CONSTRAINT "license_customer_id_fk" FOREIGN KEY ("customer_id") REFERENCES "customers"("id") ON DELETE CASCADE ON UPDATE CASCADE;

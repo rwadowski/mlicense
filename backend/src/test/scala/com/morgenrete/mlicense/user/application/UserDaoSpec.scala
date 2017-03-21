@@ -1,23 +1,21 @@
 package com.morgenrete.mlicense.user.application
 
-import java.util.UUID
-
 import com.morgenrete.mlicense.test.{FlatSpecWithDb, TestHelpers}
 import com.morgenrete.mlicense.user.domain.User
 import com.typesafe.scalalogging.StrictLogging
 import org.scalatest.Matchers
 
+import scala.concurrent.ExecutionContext
 import scala.language.implicitConversions
 
 class UserDaoSpec extends FlatSpecWithDb with StrictLogging with TestHelpers with Matchers {
   behavior of "UserDao"
 
-  implicit val ec = scala.concurrent.ExecutionContext.Implicits.global
+  implicit val ec: ExecutionContext = scala.concurrent.ExecutionContext.Implicits.global
 
   val userDao = new UserDao(sqlDatabase)
-  lazy val randomIds = List.fill(3)(UUID.randomUUID())
 
-  override def beforeEach() {
+  override def beforeEach(): Unit = {
     super.beforeEach()
     for (i <- 1 to randomIds.size) {
       val login = "user" + i

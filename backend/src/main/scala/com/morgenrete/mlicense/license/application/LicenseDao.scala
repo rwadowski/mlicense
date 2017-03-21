@@ -48,9 +48,9 @@ trait SqlLicenseSchema {
     def active            = column[Boolean]("active")
     def expirationDate    = column[OffsetDateTime]("expiration_date")
 
-    def usersFK           = foreignKey("USR_FK", userId, users)(_.id, onUpdate=ForeignKeyAction.Restrict, onDelete=ForeignKeyAction.Cascade)
-    def appFK             = foreignKey("APP_FK", applicationId, applications)(_.id, onUpdate=ForeignKeyAction.Restrict, onDelete=ForeignKeyAction.Cascade)
-    def customerFK        = foreignKey("CUS_FK", customerId, customers)(_.id, onUpdate=ForeignKeyAction.Restrict, onDelete=ForeignKeyAction.Cascade)
+    def user              = foreignKey("license_user_id_fk", userId, users)(_.id, onUpdate=ForeignKeyAction.Restrict, onDelete=ForeignKeyAction.Cascade)
+    def application       = foreignKey("license_application_id_fk", applicationId, applications)(_.id, onUpdate=ForeignKeyAction.Restrict, onDelete=ForeignKeyAction.Cascade)
+    def customer          = foreignKey("license_customer_id_fk", customerId, customers)(_.id, onUpdate=ForeignKeyAction.Restrict, onDelete=ForeignKeyAction.Cascade)
 
     def * = (id, userId, applicationId, customerId, active, expirationDate) <> ((License.apply _).tupled, License.unapply)
   }
