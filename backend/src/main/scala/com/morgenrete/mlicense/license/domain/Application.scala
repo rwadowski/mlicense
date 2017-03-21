@@ -13,3 +13,13 @@ object Application {
 
   def withRandomUUID(name: String): Application = Application(UUID.randomUUID(), name)
 }
+
+case class CreateApplication(name: String) {
+
+  lazy val toApplication: Application = Application.withRandomUUID(name)
+}
+
+case class UpdateApplication(id: ApplicationId, name: String) {
+
+  lazy val toApplication: Application = Application(id, name)
+}

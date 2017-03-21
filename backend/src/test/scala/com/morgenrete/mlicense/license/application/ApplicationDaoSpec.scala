@@ -47,7 +47,19 @@ class ApplicationDaoSpec extends FlatSpecWithDb with StrictLogging with Matchers
 
     //Then
     applicationDao.delete(app.id).futureValue
-    applicationDao.findById(app.id).futureValue should not be 'defined
+    applicationDao.findById(app.id).futureValue should not be ('defined)
+  }
+
+  it should "delete application by name" in {
+    //Given
+    val name = "AppName"
+    val app = newApplication(name)
+
+    //When
+    applicationDao.add(app).futureValue
+
+    //Then
+    applicationDao.findByName(app.name).futureValue should be ('defined)
   }
 
   it should "update application" in {

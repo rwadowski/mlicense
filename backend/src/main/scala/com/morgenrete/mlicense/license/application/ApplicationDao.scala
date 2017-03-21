@@ -21,6 +21,8 @@ class ApplicationDao(protected val database: SqlDatabase)(implicit val ec: Execu
 
   def findById(applicationId: ApplicationId): Future[Option[Application]] = db.run(applications.filter(_.id === applicationId).result.headOption)
 
+  def findByName(name: String): Future[Option[Application]] = db.run(applications.filter(_.name === name).result.headOption)
+
   def delete(applicationId: ApplicationId): Future[Unit] = db.run(applications.filter(_.id === applicationId).delete).mapToUnit
 
   def update(application: Application): Future[Unit] = db.run(applications.filter(_.id === application.id).update(application)).mapToUnit

@@ -4,7 +4,7 @@ import java.time.{OffsetDateTime, ZoneOffset}
 import java.util.UUID
 
 import com.morgenrete.mlicense.license.{ApplicationId, CustomerId}
-import com.morgenrete.mlicense.license.domain.{Application, Customer, License}
+import com.morgenrete.mlicense.license.domain._
 import com.morgenrete.mlicense.user.UserId
 import com.morgenrete.mlicense.user.domain.User
 
@@ -34,6 +34,9 @@ trait TestHelpers {
     val name = randomString()
     Application.withRandomUUID(name)
   }
+
+  def newCreateApplication(name: String): CreateApplication = CreateApplication(name)
+  def newUpdateApplication(name: String, id: Option[ApplicationId] = None): UpdateApplication = UpdateApplication(id.getOrElse(UUID.randomUUID()), name)
 
   def newCustomer(name: String): Customer = Customer.withRandomUUID(name)
 

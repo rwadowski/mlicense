@@ -10,11 +10,9 @@ import com.morgenrete.mlicense.user.domain.{BasicUserData, User}
 
 import scala.concurrent.{ExecutionContext, Future}
 
-class UserService(
-                   userDao: UserDao,
-                   emailService: EmailService,
-                   emailTemplatingEngine: EmailTemplatingEngine
-                 )(implicit ec: ExecutionContext) {
+class UserService(userDao: UserDao,
+                  emailService: EmailService,
+                  emailTemplatingEngine: EmailTemplatingEngine)(implicit ec: ExecutionContext) {
 
   def findById(userId: UserId): Future[Option[BasicUserData]] = {
     userDao.findBasicDataById(userId)
