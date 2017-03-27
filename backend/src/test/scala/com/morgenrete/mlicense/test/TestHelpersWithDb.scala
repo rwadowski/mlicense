@@ -2,7 +2,7 @@ package com.morgenrete.mlicense.test
 
 import com.morgenrete.mlicense.common.sql.SqlDatabase
 import com.morgenrete.mlicense.email.application.{DummyEmailService, EmailTemplatingEngine}
-import com.morgenrete.mlicense.license.application.{ApplicationDao, ApplicationService, CustomerDao}
+import com.morgenrete.mlicense.license.application.{ApplicationDao, ApplicationService, CustomerDao, CustomerService}
 import com.morgenrete.mlicense.license.domain.{Application, Customer}
 import com.morgenrete.mlicense.user.application.{UserDao, UserService}
 import com.morgenrete.mlicense.user.domain.User
@@ -20,6 +20,7 @@ trait TestHelpersWithDb extends TestHelpers with ScalaFutures {
   lazy val userService = new UserService(userDao, emailService, emailTemplatingEngine)
 
   lazy val applicationService = new ApplicationService(applicationDao)
+  lazy val customerService = new CustomerService(customerDao)
 
   def sqlDatabase: SqlDatabase
 

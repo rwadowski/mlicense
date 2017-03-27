@@ -45,6 +45,9 @@ trait TestHelpers {
     Customer.withRandomUUID(name)
   }
 
+  def newCreateCustomer(name: String): CreateCustomer = CreateCustomer(name)
+  def newUpdateCustomer(name: String, id: Option[CustomerId] = None): UpdateCustomer = UpdateCustomer(id.getOrElse(UUID.randomUUID()), name)
+
   def newLicense(userId: UserId,
                  applicationId: ApplicationId,
                  customerId: CustomerId,

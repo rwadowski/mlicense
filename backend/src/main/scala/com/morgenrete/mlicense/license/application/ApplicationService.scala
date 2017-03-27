@@ -18,8 +18,8 @@ class ApplicationService(applicationDao: ApplicationDao)(implicit val ec: Execut
     checkApplicationExistence(app.name)(applicationDao.findByName).flatMap{
       case Left(_) => Future.successful(CreateApplicationResult.ApplicationExists)
       case Right(_) =>
-        val createAppResult = applicationDao.add(app.toApplication)
-        createAppResult.map{_ => CreateApplicationResult.Success}
+        val result = applicationDao.add(app.toApplication)
+        result.map{_ => CreateApplicationResult.Success}
     }
   }
 

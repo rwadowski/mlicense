@@ -66,4 +66,15 @@ class CustomerDaoSpec extends FlatSpecWithDb with StrictLogging with TestHelpers
     customerDao.findById(customer.id).futureValue shouldEqual Some(modifiedCustomer)
   }
 
+  it should "find customer by name" in {
+    //Given
+    val name = "awesome_customer"
+    val customer = newCustomer(name)
+
+    //When
+    customerDao.add(customer).futureValue
+
+    //Then
+    customerDao.findByName(customer.name).futureValue should be ('defined)
+  }
 }

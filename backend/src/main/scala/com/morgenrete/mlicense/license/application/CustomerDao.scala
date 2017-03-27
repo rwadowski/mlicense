@@ -21,6 +21,8 @@ class CustomerDao(protected val database: SqlDatabase)(implicit val ec: Executio
 
   def findById(customerId: CustomerId): Future[Option[Customer]] = db.run(customers.filter(_.id === customerId).result.headOption)
 
+  def findByName(name: String): Future[Option[Customer]] = db.run(customers.filter(_.name === name).result.headOption)
+
   def delete(customerId: CustomerId): Future[Unit] = db.run(customers.filter(_.id === customerId).delete).mapToUnit
 
   def update(customer: Customer): Future[Unit] = db.run(customers.filter(_.id === customer.id).update(customer)).mapToUnit
