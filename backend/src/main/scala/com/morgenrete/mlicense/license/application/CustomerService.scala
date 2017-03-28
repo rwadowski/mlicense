@@ -2,6 +2,7 @@ package com.morgenrete.mlicense.license.application
 
 import com.morgenrete.mlicense.license.CustomerId
 import com.morgenrete.mlicense.license.domain.{CreateCustomer, Customer, UpdateCustomer}
+import com.morgenrete.mlicense.user.UserId
 
 import scala.concurrent.{ExecutionContext, Future}
 
@@ -15,12 +16,7 @@ class CustomerService(customerDao: CustomerDao)(implicit val ec: ExecutionContex
   }
 
   def create(customer: CreateCustomer): Future[CreateCustomerResult] = {
-      checkCustomerExistence(customer.name)(customerDao.findByName).flatMap{
-        case Left(_) => Future.successful(CreateCustomerResult.CustomerExists)
-        case Right(_) =>
-          val result = customerDao.add(customer.toCustomer)
-          result.map{_ => CreateCustomerResult.Success}
-      }
+    customerDao.add(customer.toCustomer).map{_ => CreateCustomerResult.Success}
   }
 
   private def checkCustomerExistence[T](criteria: T)(method: T => Future[Option[Customer]]): Future[Either[String, Unit]] = {
@@ -41,6 +37,10 @@ class CustomerService(customerDao: CustomerDao)(implicit val ec: ExecutionContex
         result.map{_ => UpdateCustomerResult.Success}
       case Right(_) => Future.successful(UpdateCustomerResult.CustomerNotExists)
     }
+  }
+
+  def allForUser(userId: UserId): Future[Seq[Customer]] = {
+    customerDao.allForUser(userId)
   }
 }
 

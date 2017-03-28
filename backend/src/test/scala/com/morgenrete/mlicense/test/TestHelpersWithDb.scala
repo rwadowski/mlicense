@@ -2,8 +2,9 @@ package com.morgenrete.mlicense.test
 
 import com.morgenrete.mlicense.common.sql.SqlDatabase
 import com.morgenrete.mlicense.email.application.{DummyEmailService, EmailTemplatingEngine}
-import com.morgenrete.mlicense.license.application.{ApplicationDao, ApplicationService, CustomerDao, CustomerService}
-import com.morgenrete.mlicense.license.domain.{Application, Customer}
+import com.morgenrete.mlicense.license.application._
+import com.morgenrete.mlicense.license.domain.{Application, Customer, License}
+import com.morgenrete.mlicense.user.UserId
 import com.morgenrete.mlicense.user.application.{UserDao, UserService}
 import com.morgenrete.mlicense.user.domain.User
 import org.scalatest.concurrent.ScalaFutures
@@ -17,10 +18,12 @@ trait TestHelpersWithDb extends TestHelpers with ScalaFutures {
   lazy val userDao = new UserDao(sqlDatabase)
   lazy val applicationDao = new ApplicationDao(sqlDatabase)
   lazy val customerDao = new CustomerDao(sqlDatabase)
+  lazy val licenseDao = new LicenseDao(sqlDatabase)
   lazy val userService = new UserService(userDao, emailService, emailTemplatingEngine)
 
   lazy val applicationService = new ApplicationService(applicationDao)
   lazy val customerService = new CustomerService(customerDao)
+  lazy val licenseService = new LicenseService(licenseDao)
 
   def sqlDatabase: SqlDatabase
 
@@ -32,15 +35,24 @@ trait TestHelpersWithDb extends TestHelpers with ScalaFutures {
     u
   }
 
-  def newRandomStoredApplication: Application = {
-    val application = newRandomApplication
+  def newRandomStoredApplication(userId: UserId): Application = {
+    val application = newRandomApplication(userId)
     applicationDao.add(application).futureValue
     application
   }
 
-  def newRandomStoredCustomer: Customer = {
-    val customer = newRandomCustomer
+  def newRandomStoredCustomer(userId: UserId): Customer = {
+    val customer = newRandomCustomer(userId)
     customerDao.add(customer).futureValue
     customer
+  }
+
+  def newRandomStoredLicense(user: Option[User] = None): License = {
+    val u = user.getOrElse(newRandomStoredUser())
+    val c = newRandomStoredCustomer(u.id)
+    val a = newRandomStoredApplication(u.id)
+    val l = newRandomLicense(u.id, a.id, c.id)
+    licenseDao.add(l).futureValue
+    l
   }
 }

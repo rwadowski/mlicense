@@ -37,16 +37,20 @@ CREATE UNIQUE INDEX "remember_me_tokens_selector" ON "remember_me_tokens"("selec
 -- CUSTOMERS
 CREATE TABLE "customers" (
   "id" UUID NOT NULL,
-  "name" VARCHAR NOT NULL
+  "name" VARCHAR NOT NULL,
+  "user_id" UUID NOT NULL
 );
 ALTER TABLE "customers" ADD CONSTRAINT "customers_id" PRIMARY KEY("id");
+ALTER TABLE "customers" ADD CONSTRAINT "customers_user_id_fk" FOREIGN KEY ("user_id") REFERENCES "users"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- APPLICATIONS
 CREATE TABLE "applications" (
   "id" UUID NOT NULL,
-  "name" VARCHAR NOT NULL
+  "name" VARCHAR NOT NULL,
+  "user_id" UUID NOT NULL
 );
 ALTER TABLE "applications" ADD CONSTRAINT "applications_id" PRIMARY KEY("id");
+ALTER TABLE "applications" ADD CONSTRAINT "applications_user_id_fk" FOREIGN KEY ("user_id") REFERENCES "users"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- LICENSES
 CREATE TABLE "licenses" (

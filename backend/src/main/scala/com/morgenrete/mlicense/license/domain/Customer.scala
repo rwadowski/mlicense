@@ -3,23 +3,23 @@ package com.morgenrete.mlicense.license.domain
 import java.util.UUID
 
 import com.morgenrete.mlicense.license.CustomerId
+import com.morgenrete.mlicense.user.UserId
 
 /**
   * Created by rwadowski on 20.03.17.
   */
-case class Customer(id: CustomerId, name: String)
+case class Customer(id: CustomerId, name: String, userId: UserId)
 
 object Customer {
-  def withRandomUUID(name: String): Customer = Customer(UUID.randomUUID(), name)
+  def withRandomUUID(name: String, userId: UserId): Customer = Customer(UUID.randomUUID(), name, userId)
 }
 
+case class CreateCustomer(name: String, userId: UserId) {
 
-case class CreateCustomer(name: String) {
-
-  lazy val toCustomer: Customer = Customer.withRandomUUID(name)
+  lazy val toCustomer: Customer = Customer.withRandomUUID(name, userId)
 }
 
-case class UpdateCustomer(id: CustomerId, name: String) {
+case class UpdateCustomer(id: CustomerId, name: String, userId: UserId) {
 
-  lazy val toCustomer: Customer = Customer(id, name)
+  lazy val toCustomer: Customer = Customer(id, name, userId)
 }

@@ -85,17 +85,18 @@ lazy val backend: Project = (project in file("backend"))
     .settings(
       libraryDependencies ++= slickStack ++ akkaStack ++ circe ++ Seq(javaxMailSun, typesafeConfig),
       unmanagedResourceDirectories in Compile := {
-        (unmanagedResourceDirectories in Compile).value ++ List(baseDirectory.value.getParentFile / frontend.base.getName / "dist" )
-      },
-      (compile in Compile) := {
-        npmTask.toTask(" run build.prod").value
-        (compile in Compile).value
+        (unmanagedResourceDirectories in Compile).value ++ List(baseDirectory.value.getParentFile / frontend.base.getName / "dist")
       }
+//      },
+//      (compile in Compile) := {
+//        npmTask.toTask(" run build.prod").value
+//        (compile in Compile).value
+//      }
     )
 
 lazy val frontend: Project = (project in file("frontend"))
     .settings(commonSettings)
-    .settings(test in Test := (test in Test).dependsOn(npmTask.toTask(" test")).value)
+//    .settings(test in Test := (test in Test).dependsOn(npmTask.toTask(" test")).value)
 
 lazy val rootProject = (project in file("."))
   .enablePlugins(JavaServerAppPackaging, SystemdPlugin)

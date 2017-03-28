@@ -6,6 +6,7 @@ import java.util.{Date, UUID}
 import com.morgenrete.mlicense.common.sql.SqlDatabase
 import com.morgenrete.mlicense.license.LicenseId
 import com.morgenrete.mlicense.license.domain.License
+import com.morgenrete.mlicense.user.UserId
 import com.morgenrete.mlicense.user.application.SqlUserSchema
 
 import scala.concurrent.{ExecutionContext, Future}
@@ -26,7 +27,12 @@ class LicenseDao(protected val database: SqlDatabase)(implicit val ec: Execution
 
   def delete(licenseId: LicenseId): Future[Unit] = db.run(licenses.filter(_.id === licenseId).delete).mapToUnit
 
-  def update(license: License): Future[Unit] = db.run(licenses.filter(_.id === license.id).update(license)).mapToUnit
+  def update(license: License): Future[Option[License]] = db.run(licenses.filter(l => l.id === license.id && l.userId === license.userId).update(license)).map{
+    case 0 => None
+    case _ => Some(license)
+  }
+
+  def allForUser(userId: UserId): Future[Seq[License]] = db.run(licenses.filter(_.userId === userId).result)
 }
 
 trait SqlLicenseSchema {

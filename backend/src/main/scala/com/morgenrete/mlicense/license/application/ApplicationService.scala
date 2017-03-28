@@ -2,6 +2,7 @@ package com.morgenrete.mlicense.license.application
 
 import com.morgenrete.mlicense.license.ApplicationId
 import com.morgenrete.mlicense.license.domain.{Application, CreateApplication, UpdateApplication}
+import com.morgenrete.mlicense.user.UserId
 
 import scala.concurrent.{ExecutionContext, Future}
 
@@ -37,10 +38,14 @@ class ApplicationService(applicationDao: ApplicationDao)(implicit val ec: Execut
   def update(app: UpdateApplication): Future[UpdateApplicationResult] = {
     checkApplicationExistence(app.id)(applicationDao.findById).flatMap{
       case Left(_) =>
-        val updateApplicationResult = applicationDao.update(app.toApplication)
-        updateApplicationResult.map{_ => UpdateApplicationResult.Success}
+        val result = applicationDao.update(app.toApplication)
+        result.map{_ => UpdateApplicationResult.Success}
       case Right(_) => Future.successful(UpdateApplicationResult.ApplicationNotExists)
     }
+  }
+
+  def allForUser(userId: UserId): Future[Seq[Application]] = {
+    applicationDao.allForUser(userId)
   }
 }
 

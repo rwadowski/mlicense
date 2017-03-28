@@ -30,3 +30,22 @@ object License {
             active,
             expirationDate)
 }
+
+case class CreateLicense(userId: UserId,
+                         applicationId: ApplicationId,
+                         customerId: CustomerId,
+                         active: Boolean,
+                         expirationDate: OffsetDateTime) {
+
+  lazy val toLicense: License = License.withRandomUUID(userId, applicationId, customerId, active, expirationDate)
+}
+
+case class UpdateLicense(id: LicenseId,
+                         userId: UserId,
+                         applicationId: ApplicationId,
+                         customerId: CustomerId,
+                         active: Boolean,
+                         expirationDate: OffsetDateTime) {
+
+  lazy val toLicense: License =  License(id, userId, applicationId, customerId, active, expirationDate)
+}

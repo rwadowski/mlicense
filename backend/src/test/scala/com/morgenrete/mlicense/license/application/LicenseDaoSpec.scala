@@ -13,13 +13,11 @@ import scala.concurrent.ExecutionContext
 class LicenseDaoSpec extends FlatSpecWithDb with StrictLogging with TestHelpersWithDb with Matchers {
   behavior of "LicenseDao"
 
-  val licenseDao = new LicenseDao(sqlDatabase)
-
   it should "add new license" in {
     //Given
     val user = newRandomStoredUser(Some("password"))
-    val customer = newRandomStoredCustomer
-    val application = newRandomStoredApplication
+    val customer = newRandomStoredCustomer(user.id)
+    val application = newRandomStoredApplication(user.id)
 
     val license = License.withRandomUUID(user.id, application.id, customer.id, true, currentOffsetDateTime)
 
@@ -33,8 +31,8 @@ class LicenseDaoSpec extends FlatSpecWithDb with StrictLogging with TestHelpersW
   it should "delete license by id" in {
     //Given
     val user = newRandomStoredUser(Some("password"))
-    val customer = newRandomStoredCustomer
-    val application = newRandomStoredApplication
+    val customer = newRandomStoredCustomer(user.id)
+    val application = newRandomStoredApplication(user.id)
 
     val license = License.withRandomUUID(user.id, application.id, customer.id, true, currentOffsetDateTime)
 
@@ -49,8 +47,8 @@ class LicenseDaoSpec extends FlatSpecWithDb with StrictLogging with TestHelpersW
   it should "update license" in {
     //Given
     val user = newRandomStoredUser(Some("password"))
-    val customer = newRandomStoredCustomer
-    val application = newRandomStoredApplication
+    val customer = newRandomStoredCustomer(user.id)
+    val application = newRandomStoredApplication(user.id)
 
     val license = License.withRandomUUID(user.id, application.id, customer.id, true, currentOffsetDateTime)
     val newExpirationDate = validExpirationDate(10) //ten days from now it will expire
@@ -63,5 +61,18 @@ class LicenseDaoSpec extends FlatSpecWithDb with StrictLogging with TestHelpersW
     //Then
     licenseDao.findById(license.id).futureValue should be ('defined)
     licenseDao.findById(license.id).futureValue shouldEqual Some(modifiedLicense)
+  }
+
+  it should "fetch only data belonging to user" in {
+    //given
+    val user1 = newRandomStoredUser()
+    val lic1 = newRandomStoredLicense(Some(user1))
+
+    //when
+    val result = licenseDao.allForUser(user1.id).futureValue
+
+    //then
+    result.size shouldEqual 1
+    result.head shouldEqual lic1
   }
 }

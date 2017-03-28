@@ -3,7 +3,7 @@ package com.morgenrete.mlicense.test
 import java.time.{OffsetDateTime, ZoneOffset}
 import java.util.UUID
 
-import com.morgenrete.mlicense.license.{ApplicationId, CustomerId}
+import com.morgenrete.mlicense.license.{ApplicationId, CustomerId, LicenseId}
 import com.morgenrete.mlicense.license.domain._
 import com.morgenrete.mlicense.user.UserId
 import com.morgenrete.mlicense.user.domain.User
@@ -28,31 +28,56 @@ trait TestHelpers {
     newUser(login, s"$login@example.com", pass, "someSalt")
   }
 
-  def newApplication(name: String): Application = Application.withRandomUUID(name)
+  def newApplication(name: String, userId: UserId): Application = Application.withRandomUUID(name, userId)
 
-  def newRandomApplication: Application = {
+  def newRandomApplication(userId: UserId): Application = {
     val name = randomString()
-    Application.withRandomUUID(name)
+    Application.withRandomUUID(name, userId)
   }
 
-  def newCreateApplication(name: String): CreateApplication = CreateApplication(name)
-  def newUpdateApplication(name: String, id: Option[ApplicationId] = None): UpdateApplication = UpdateApplication(id.getOrElse(UUID.randomUUID()), name)
+  def newCreateApplication(name: String, userId: UserId): CreateApplication = CreateApplication(name, userId)
+  def newUpdateApplication(name: String, userId: UserId, id: Option[ApplicationId] = None): UpdateApplication = UpdateApplication(id.getOrElse(UUID.randomUUID()), name, userId)
 
-  def newCustomer(name: String): Customer = Customer.withRandomUUID(name)
+  def newCustomer(name: String, userId: UserId): Customer = Customer.withRandomUUID(name, userId)
 
-  def newRandomCustomer: Customer = {
+  def newRandomCustomer(userId: UserId): Customer = {
     val name = randomString()
-    Customer.withRandomUUID(name)
+    Customer.withRandomUUID(name, userId)
   }
 
-  def newCreateCustomer(name: String): CreateCustomer = CreateCustomer(name)
-  def newUpdateCustomer(name: String, id: Option[CustomerId] = None): UpdateCustomer = UpdateCustomer(id.getOrElse(UUID.randomUUID()), name)
+  def newCreateCustomer(name: String, userId: UserId): CreateCustomer = CreateCustomer(name, userId)
+  def newUpdateCustomer(name: String, userId: UserId, id: Option[CustomerId] = None): UpdateCustomer = UpdateCustomer(id.getOrElse(UUID.randomUUID()), name, userId)
 
   def newLicense(userId: UserId,
                  applicationId: ApplicationId,
                  customerId: CustomerId,
                  active: Boolean,
                  expirationDate: OffsetDateTime): License = License.withRandomUUID(userId, applicationId, customerId, active, expirationDate)
+
+  def newRandomLicense(userId: UserId,
+                       applicationId: ApplicationId,
+                       customerId: CustomerId): License = License.withRandomUUID(userId, applicationId, customerId, true, validExpirationDate(100))
+
+  def newCreateLicense(userId: UserId,
+                       applicationId: ApplicationId,
+                       customerId: CustomerId,
+                       active: Boolean,
+                       expirationDate: OffsetDateTime): CreateLicense = CreateLicense(userId,
+                                                                                      applicationId,
+                                                                                      customerId,
+                                                                                      active,
+                                                                                      expirationDate)
+
+  def newUpdateLicense(licenseId: LicenseId,
+                       userId: UserId,
+                       applicationId: ApplicationId,
+                       customerId: CustomerId,
+                       active: Boolean,
+                       expirationDate: OffsetDateTime): UpdateLicense = UpdateLicense(licenseId, userId,
+                                                                                      applicationId,
+                                                                                      customerId,
+                                                                                      active,
+                                                                                      expirationDate)
 
   def validExpirationDate(days: Int): OffsetDateTime = OffsetDateTime.now(ZoneOffset.UTC).plusDays(days)
   def invalidExpirationDate(days: Int): OffsetDateTime = OffsetDateTime.now(ZoneOffset.UTC).minusDays(days)

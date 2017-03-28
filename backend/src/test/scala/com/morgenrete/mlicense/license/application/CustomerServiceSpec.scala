@@ -1,6 +1,7 @@
 package com.morgenrete.mlicense.license.application
 
 import com.morgenrete.mlicense.test.{FlatSpecWithDb, TestHelpersWithDb}
+import com.morgenrete.mlicense.user.domain.User
 import org.scalatest.Matchers
 
 /**
@@ -8,17 +9,19 @@ import org.scalatest.Matchers
   */
 class CustomerServiceSpec extends FlatSpecWithDb with Matchers with TestHelpersWithDb {
 
+  val user: User = newRandomUser()
+
   override protected def beforeEach(): Unit = {
     super.beforeEach()
-
-    customerDao.add(newCustomer("cus1"))
-    customerDao.add(newCustomer("cus2"))
+    userDao.add(user).futureValue
+    customerDao.add(newCustomer("cus1", user.id)).futureValue
+    customerDao.add(newCustomer("cus2", user.id)).futureValue
   }
 
   "create" should "create customer with name that not exists" in {
     //given
     val name = "cus3"
-    val cusCreate = newCreateCustomer(name)
+    val cusCreate = newCreateCustomer(name, user.id)
 
     //when
     val result = customerService.create(cusCreate).futureValue
@@ -28,24 +31,11 @@ class CustomerServiceSpec extends FlatSpecWithDb with Matchers with TestHelpersW
     customerDao.findByName(name).futureValue should be ('defined)
   }
 
-  "create" should "not create customer with name that not exists" in {
-    //given
-    val name = "cus1"
-    val cusCreate = newCreateCustomer(name)
-
-    //when
-    val result = customerService.create(cusCreate).futureValue
-
-    //then
-    result should be (CreateCustomerResult.CustomerExists)
-    customerDao.findByName(name).futureValue should be ('defined)
-  }
-
   "update" should "update existing customers" in {
     //given
     val newName = "cus3_new"
-    val customer = newRandomStoredCustomer
-    val updateCustomer = newUpdateCustomer(newName, Some(customer.id))
+    val customer = newRandomStoredCustomer(user.id)
+    val updateCustomer = newUpdateCustomer(newName, user.id, Some(customer.id))
 
     //when
     val result = customerService.update(updateCustomer).futureValue
@@ -60,8 +50,8 @@ class CustomerServiceSpec extends FlatSpecWithDb with Matchers with TestHelpersW
   "update" should "fail during update non existing customers" in {
     //given
     val newName = "cus3_new"
-    val customer = newRandomStoredCustomer
-    val updateCustomer = newUpdateCustomer(newName)
+    val customer = newRandomStoredCustomer(user.id)
+    val updateCustomer = newUpdateCustomer(newName, user.id)
 
     //when
     val result = customerService.update(updateCustomer).futureValue

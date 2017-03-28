@@ -1,6 +1,7 @@
 package com.morgenrete.mlicense.license.application
 
 import com.morgenrete.mlicense.test.{FlatSpecWithDb, TestHelpersWithDb}
+import com.morgenrete.mlicense.user.domain.User
 import org.scalatest.Matchers
 
 /**
@@ -8,17 +9,20 @@ import org.scalatest.Matchers
   */
 class ApplicationServiceSpec extends FlatSpecWithDb with Matchers with TestHelpersWithDb {
 
+  val user: User = newRandomUser()
+
+
   override protected def beforeEach(): Unit = {
     super.beforeEach()
-
-    applicationDao.add(newApplication("app1"))
-    applicationDao.add(newApplication("app2"))
+    userDao.add(user).futureValue
+    applicationDao.add(newApplication("app1", user.id)).futureValue
+    applicationDao.add(newApplication("app2", user.id)).futureValue
   }
 
   "create" should "create app with name that not exists" in {
     //given
     val name = "app3"
-    val appCreate = newCreateApplication(name)
+    val appCreate = newCreateApplication(name, user.id)
 
     //when
     val result = applicationService.create(appCreate).futureValue
@@ -31,7 +35,7 @@ class ApplicationServiceSpec extends FlatSpecWithDb with Matchers with TestHelpe
   "create" should "not create app with name that not exists" in {
     //given
     val name = "app1"
-    val appCreate = newCreateApplication(name)
+    val appCreate = newCreateApplication(name, user.id)
 
     //when
     val result = applicationService.create(appCreate).futureValue
@@ -44,8 +48,8 @@ class ApplicationServiceSpec extends FlatSpecWithDb with Matchers with TestHelpe
   "update" should "update existing applications" in {
     //given
     val newName = "app3_new"
-    val application = newRandomStoredApplication
-    val updateApplication = newUpdateApplication(newName, Some(application.id))
+    val application = newRandomStoredApplication(user.id)
+    val updateApplication = newUpdateApplication(newName, user.id, Some(application.id))
 
     //when
     val result = applicationService.update(updateApplication).futureValue
@@ -60,8 +64,8 @@ class ApplicationServiceSpec extends FlatSpecWithDb with Matchers with TestHelpe
   "update" should "fail during update non existing applications" in {
     //given
     val newName = "app3_new"
-    val application = newRandomStoredApplication
-    val updateApplication = newUpdateApplication(newName)
+    val application = newRandomStoredApplication(user.id)
+    val updateApplication = newUpdateApplication(newName, user.id)
 
     //when
     val result = applicationService.update(updateApplication).futureValue
@@ -73,5 +77,4 @@ class ApplicationServiceSpec extends FlatSpecWithDb with Matchers with TestHelpe
     applicationDao.findByName(newName).futureValue should not be ('defined)
     applicationDao.findById(updateApplication.id).futureValue should not be ('defined)
   }
-
 }
