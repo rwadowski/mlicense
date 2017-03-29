@@ -89,7 +89,7 @@ object Utils {
   // This method intentionally runs in constant time if the two strings have the same length.
   // If it didn't, it would be vulnerable to a timing attack.
   def constantTimeEquals(a: String, b: String): Boolean = {
-    if (a.length != b.length) {
+    if(a.length != b.length) {
       false
     }
     else {

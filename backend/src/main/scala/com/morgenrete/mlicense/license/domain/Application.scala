@@ -15,12 +15,12 @@ object Application {
   def withRandomUUID(name: String, userId: UserId): Application = Application(UUID.randomUUID(), name, userId)
 }
 
-case class CreateApplication(name: String, userId: UserId) {
+case class CreateApplication(name: String) {
 
-  lazy val toApplication: Application = Application.withRandomUUID(name, userId)
+  def toApplication(userId: UserId): Application = Application.withRandomUUID(name, userId)
 }
 
-case class UpdateApplication(id: ApplicationId, name: String, userId: UserId) {
+case class UpdateApplication(id: ApplicationId, name: String) {
 
-  lazy val toApplication: Application = Application(id, name, userId)
+  def toApplication(userId: UserId): Application = Application(id, name, userId)
 }

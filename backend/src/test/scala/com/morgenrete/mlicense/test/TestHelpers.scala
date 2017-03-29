@@ -35,8 +35,8 @@ trait TestHelpers {
     Application.withRandomUUID(name, userId)
   }
 
-  def newCreateApplication(name: String, userId: UserId): CreateApplication = CreateApplication(name, userId)
-  def newUpdateApplication(name: String, userId: UserId, id: Option[ApplicationId] = None): UpdateApplication = UpdateApplication(id.getOrElse(UUID.randomUUID()), name, userId)
+  def newCreateApplication(name: String): CreateApplication = CreateApplication(name)
+  def newUpdateApplication(name: String, id: Option[ApplicationId] = None): UpdateApplication = UpdateApplication(id.getOrElse(UUID.randomUUID()), name)
 
   def newCustomer(name: String, userId: UserId): Customer = Customer.withRandomUUID(name, userId)
 

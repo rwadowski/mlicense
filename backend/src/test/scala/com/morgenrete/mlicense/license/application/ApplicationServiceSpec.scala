@@ -11,7 +11,6 @@ class ApplicationServiceSpec extends FlatSpecWithDb with Matchers with TestHelpe
 
   val user: User = newRandomUser()
 
-
   override protected def beforeEach(): Unit = {
     super.beforeEach()
     userDao.add(user).futureValue
@@ -22,10 +21,10 @@ class ApplicationServiceSpec extends FlatSpecWithDb with Matchers with TestHelpe
   "create" should "create app with name that not exists" in {
     //given
     val name = "app3"
-    val appCreate = newCreateApplication(name, user.id)
+    val appCreate = newCreateApplication(name)
 
     //when
-    val result = applicationService.create(appCreate).futureValue
+    val result = applicationService.create(appCreate.toApplication(user.id)).futureValue
 
     //then
     result should be (CreateApplicationResult.Success)
@@ -35,10 +34,10 @@ class ApplicationServiceSpec extends FlatSpecWithDb with Matchers with TestHelpe
   "create" should "not create app with name that not exists" in {
     //given
     val name = "app1"
-    val appCreate = newCreateApplication(name, user.id)
+    val appCreate = newCreateApplication(name)
 
     //when
-    val result = applicationService.create(appCreate).futureValue
+    val result = applicationService.create(appCreate.toApplication(user.id)).futureValue
 
     //then
     result should be (CreateApplicationResult.ApplicationExists)
@@ -49,10 +48,10 @@ class ApplicationServiceSpec extends FlatSpecWithDb with Matchers with TestHelpe
     //given
     val newName = "app3_new"
     val application = newRandomStoredApplication(user.id)
-    val updateApplication = newUpdateApplication(newName, user.id, Some(application.id))
+    val updateApplication = newUpdateApplication(newName, Some(application.id))
 
     //when
-    val result = applicationService.update(updateApplication).futureValue
+    val result = applicationService.update(updateApplication.toApplication(user.id)).futureValue
 
     //then
     result should be (UpdateApplicationResult.Success)
@@ -65,10 +64,10 @@ class ApplicationServiceSpec extends FlatSpecWithDb with Matchers with TestHelpe
     //given
     val newName = "app3_new"
     val application = newRandomStoredApplication(user.id)
-    val updateApplication = newUpdateApplication(newName, user.id)
+    val updateApplication = newUpdateApplication(newName)
 
     //when
-    val result = applicationService.update(updateApplication).futureValue
+    val result = applicationService.update(updateApplication.toApplication(user.id)).futureValue
 
     //then
     result should be (UpdateApplicationResult.ApplicationNotExists)

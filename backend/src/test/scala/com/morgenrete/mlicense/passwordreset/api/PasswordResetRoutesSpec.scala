@@ -31,45 +31,45 @@ class PasswordResetRoutesSpec extends BaseRoutesSpec with TestHelpersWithDb { sp
     }
   }
 
-//  "POST /[code] with password" should "change the password" in {
-//    // given
-//    val user = newRandomStoredUser()
-//    val code = PasswordResetCode(randomString(), user)
-//    passwordResetCodeDao.add(code).futureValue
-//
-//    val newPassword = randomString()
-//
-//    // when
-//    Post(s"/passwordreset/${code.code}", Map("userId" -> user.id.toString, "password" -> newPassword)) ~> routes ~> check {
-//      responseAs[String] should be ("Ok")
-//      User.passwordsMatch(newPassword, userDao.findById(user.id).futureValue.get) should be (true)
-//    }
-//  }
-//
-//  "POST /[code] without password" should "result in an error" in {
-//    // given
-//    val user = newRandomStoredUser()
-//    val code = PasswordResetCode(randomString(), user)
-//    passwordResetCodeDao.add(code).futureValue
-//
-//    // when
-//    Post("/passwordreset/123") ~> routes ~> check {
-//      status should be (StatusCodes.BadRequest)
-//    }
-//  }
-//
-//  "POST /[code] with password but with invalid code" should "result in an error" in {
-//    // given
-//    val user = newRandomStoredUser()
-//    val code = PasswordResetCode(randomString(), user)
-//    passwordResetCodeDao.add(code).futureValue
-//
-//    val newPassword = randomString()
-//
-//    // when
-//    Post("/passwordreset/123", Map("userId" -> user.id.toString, "password" -> newPassword)) ~> routes ~> check {
-//      status should be (StatusCodes.Forbidden)
-//      User.passwordsMatch(newPassword, userDao.findById(user.id).futureValue.get) should be (false)
-//    }
-//  }
+  "POST /[code] with password" should "change the password" in {
+    // given
+    val user = newRandomStoredUser()
+    val code = PasswordResetCode(randomString(), user)
+    passwordResetCodeDao.add(code).futureValue
+
+    val newPassword = randomString()
+
+    // when
+    Post(s"/passwordreset/${code.code}", Map("userId" -> user.id.toString, "password" -> newPassword)) ~> routes ~> check {
+      responseAs[String] should be ("Ok")
+      User.passwordsMatch(newPassword, userDao.findById(user.id).futureValue.get) should be (true)
+    }
+  }
+
+  "POST /[code] without password" should "result in an error" in {
+    // given
+    val user = newRandomStoredUser()
+    val code = PasswordResetCode(randomString(), user)
+    passwordResetCodeDao.add(code).futureValue
+
+    // when
+    Post("/passwordreset/123") ~> routes ~> check {
+      status should be (StatusCodes.BadRequest)
+    }
+  }
+
+  "POST /[code] with password but with invalid code" should "result in an error" in {
+    // given
+    val user = newRandomStoredUser()
+    val code = PasswordResetCode(randomString(), user)
+    passwordResetCodeDao.add(code).futureValue
+
+    val newPassword = randomString()
+
+    // when
+    Post("/passwordreset/123", Map("userId" -> user.id.toString, "password" -> newPassword)) ~> routes ~> check {
+      status should be (StatusCodes.Forbidden)
+      User.passwordsMatch(newPassword, userDao.findById(user.id).futureValue.get) should be (false)
+    }
+  }
 }

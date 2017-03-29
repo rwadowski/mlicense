@@ -6,14 +6,16 @@ import akka.http.scaladsl.server.Directives._
 import com.morgenrete.mlicense.common.Utils
 import com.morgenrete.mlicense.common.api.JsonSupport
 import com.morgenrete.mlicense.user.UserId
-import com.morgenrete.mlicense.user.application.{UserRegisterResult, UserService}
+import com.morgenrete.mlicense.user.application.{Session, UserRegisterResult, UserService}
 import com.morgenrete.mlicense.user.domain.BasicUserData
 import com.typesafe.scalalogging.StrictLogging
 import io.circe.generic.auto._
+import com.softwaremill.session.SessionDirectives._
+import com.softwaremill.session.SessionOptions._
 
 import scala.concurrent.Future
 
-trait UsersRoutes extends JsonSupport with StrictLogging {
+trait UsersRoutes extends JsonSupport with SessionSupport with StrictLogging {
 
   def userService: UserService
 
@@ -22,7 +24,11 @@ trait UsersRoutes extends JsonSupport with StrictLogging {
   val usersRoutes = pathPrefix("users") {
     path("logout") {
       get {
-        complete("ok")
+        userIdFromSession { _ =>
+          invalidateSession(refreshable, usingCookies) {
+            complete("ok")
+          }
+        }
       }
     } ~
       path("register") {
@@ -38,10 +44,12 @@ trait UsersRoutes extends JsonSupport with StrictLogging {
       } ~
       path("changepassword") {
         post {
-          entity(as[ChangePasswordInput]) { in =>
-            onSuccess(userService.changePassword(in.userId, in.currentPassword, in.newPassword)) {
-              case Left(msg) => complete(StatusCodes.Forbidden, msg)
-              case Right(_) => complete("Ok")
+          userFromSession { user =>
+            entity(as[ChangePasswordInput]) { in =>
+              onSuccess(userService.changePassword(user.id, in.currentPassword, in.newPassword)) {
+                case Left(msg) => complete(StatusCodes.Forbidden, msg)
+                case Right(_) => complete("Ok")
+              }
             }
           }
         }
@@ -51,25 +59,41 @@ trait UsersRoutes extends JsonSupport with StrictLogging {
           entity(as[LoginInput]) { in =>
             onSuccess(userService.authenticate(in.login, in.password)) {
               case None => reject(AuthorizationFailedRejection)
-              case Some(user) => complete(user)
+              case Some(user) =>
+                val session = Session(user.id)
+                (if(in.rememberMe.getOrElse(false)) {
+                  setSession(refreshable, usingCookies, session)
+                }
+                else {
+                  setSession(oneOff, usingCookies, session)
+                }) {
+                  complete(user)
+                }
             }
           }
         } ~
           patch {
-            entity(as[PatchUserInput]) { in =>
-              val userId = in.userId
-              val updateAction = (in.login, in.email) match {
-                case (Some(login), _) => userService.changeLogin(userId, login)
-                case (_, Some(email)) => userService.changeEmail(userId, email)
-                case _ => Future.successful(Left("You have to provide new login or email"))
-              }
+            userIdFromSession { userId =>
+              entity(as[PatchUserInput]) { in =>
+                val updateAction = (in.login, in.email) match {
+                  case (Some(login), _) => userService.changeLogin(userId, login)
+                  case (_, Some(email)) => userService.changeEmail(userId, email)
+                  case _ => Future.successful(Left("You have to provide new login or email"))
+                }
 
-              onSuccess(updateAction) {
-                case Left(msg) => complete(StatusCodes.Conflict, msg)
-                case Right(_) => complete("Ok")
+                onSuccess(updateAction) {
+                  case Left(msg) => complete(StatusCodes.Conflict, msg)
+                  case Right(_) => complete("Ok")
+                }
               }
             }
+          } ~ {
+          get {
+            userFromSession { user =>
+              complete(user)
+            }
           }
+        }
       }
   }
 }
@@ -79,10 +103,9 @@ case class RegistrationInput(login: String, email: String, password: String) {
 }
 
 
-case class ChangePasswordInput(userId: UserId,
-                               currentPassword: String,
+case class ChangePasswordInput(currentPassword: String,
                                newPassword: String)
 
 case class LoginInput(login: String, password: String, rememberMe: Option[Boolean])
 
-case class PatchUserInput(userId: UserId, login: Option[String], email: Option[String])
+case class PatchUserInput(login: Option[String], email: Option[String])

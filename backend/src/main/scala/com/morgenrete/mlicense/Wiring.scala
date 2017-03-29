@@ -4,8 +4,9 @@ import akka.actor.ActorSystem
 import com.morgenrete.mlicense.common.sql.SqlDatabase
 import com.morgenrete.mlicense.config.MLicenseConfig
 import com.morgenrete.mlicense.email.application.{EmailTemplatingEngine, SmtpEmailService}
+import com.morgenrete.mlicense.license.application._
 import com.morgenrete.mlicense.passwordreset.application.PasswordResetCodeDao
-import com.morgenrete.mlicense.user.application.{RememberMeTokenDao, UserDao, UserService}
+import com.morgenrete.mlicense.user.application.{RefreshTokenStorageImpl, RememberMeTokenDao, UserDao, UserService}
 
 import scala.concurrent.ExecutionContext
 
@@ -24,10 +25,17 @@ trait Wiring {
 
   lazy val userDao = new UserDao(sqlDatabase)(daoEc)
   lazy val codeDao = new PasswordResetCodeDao(sqlDatabase)(daoEc)
+  lazy val applicationDao = new ApplicationDao(sqlDatabase)(daoEc)
+  lazy val customerDao = new CustomerDao(sqlDatabase)(daoEc)
+  lazy val licenseDao = new LicenseDao(sqlDatabase)(daoEc)
   lazy val rememberMeTokenDao = new RememberMeTokenDao(sqlDatabase)(daoEc)
 
   lazy val emailService =  new SmtpEmailService(config)(serviceEc)
   lazy val emailTemplatingEngine = new EmailTemplatingEngine
-
+  lazy val applicationService = new ApplicationService(applicationDao)(serviceEc)
+  lazy val customerService = new CustomerService(customerDao)(serviceEc)
+  lazy val licenseService = new LicenseService(licenseDao)(serviceEc)
   lazy val userService = new UserService(userDao, emailService, emailTemplatingEngine)(serviceEc)
+
+  lazy val refreshTokenStorage = new RefreshTokenStorageImpl(rememberMeTokenDao, system)(serviceEc)
 }

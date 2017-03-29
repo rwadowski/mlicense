@@ -4,9 +4,12 @@ import akka.actor.ActorSystem
 import akka.http.scaladsl.Http
 import akka.stream.{ActorMaterializer, Materializer}
 import com.morgenrete.mlicense.config.MLicenseConfig
+import com.morgenrete.mlicense.user.application.Session
+import com.softwaremill.session.{SessionConfig, SessionManager}
 import com.typesafe.config.ConfigFactory
 import com.typesafe.scalalogging.StrictLogging
 
+import scala.concurrent.ExecutionContext
 import scala.util.{Failure, Success}
 
 /**
@@ -14,11 +17,13 @@ import scala.util.{Failure, Success}
   */
 class Server extends Routes with Wiring with StrictLogging {
 
-  implicit val system = ActorSystem()
-  implicit val materializer: Materializer = ActorMaterializer()
-  import system.dispatcher
-
   override lazy val config: MLicenseConfig = new MLicenseConfig(ConfigFactory.load())
+  lazy val sessionConfig: SessionConfig = SessionConfig.fromConfig(config.rootConfig).copy(sessionEncryptData = true)
+
+  implicit val system = ActorSystem()
+  implicit val ec: ExecutionContext = system.dispatchers.lookup("akka-http-routes-dispatcher")
+  implicit val materializer: Materializer = ActorMaterializer()
+  implicit val sessionManager: SessionManager[Session] = new SessionManager[Session](sessionConfig)
 
   def start(): Unit = {
     val startFuture = Http().bindAndHandle(routes, config.host, config.port)

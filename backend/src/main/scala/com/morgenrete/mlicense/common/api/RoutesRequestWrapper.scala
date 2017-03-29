@@ -5,7 +5,9 @@ import akka.http.scaladsl.server.Directives._
 import akka.http.scaladsl.server.{ExceptionHandler, RejectionHandler}
 import com.typesafe.scalalogging.StrictLogging
 
-trait RoutesRequestWrapper extends StrictLogging {
+trait RoutesRequestWrapper extends CacheSupport
+  with SecuritySupport
+  with StrictLogging {
 
   private val exceptionHandler = ExceptionHandler {
     case e: Exception =>
@@ -24,5 +26,9 @@ trait RoutesRequestWrapper extends StrictLogging {
     } & handleRejections(rejectionHandler)
   }
 
-  val requestWrapper = logDuration & handleExceptions(exceptionHandler) & encodeResponse
+  val requestWrapper = logDuration &
+    handleExceptions(exceptionHandler) &
+    cacheImages &
+    addSecurityHeaders &
+    encodeResponse
 }

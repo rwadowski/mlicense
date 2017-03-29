@@ -1,8 +1,7 @@
 package com.morgenrete.mlicense.user.api
 
-import java.util.UUID
-
 import akka.http.scaladsl.model.StatusCodes
+import akka.http.scaladsl.model.headers.{Cookie, `Set-Cookie`}
 import akka.http.scaladsl.server.Route
 import com.morgenrete.mlicense.test.{BaseRoutesSpec, TestHelpersWithDb}
 
@@ -12,10 +11,8 @@ class UsersRoutesSpec extends BaseRoutesSpec with TestHelpersWithDb { spec =>
     override val userService = spec.userService
   }.usersRoutes)
 
-  val id = UUID.randomUUID().toString
-
   "POST /register" should "register new user" in {
-    Post("/users/register", Map("id" -> id, "login" -> "newUser", "email" -> "newUser@sml.com", "password" -> "secret")) ~> routes ~> check {
+    Post("/users/register", Map("login" -> "newUser", "email" -> "newUser@sml.com", "password" -> "secret")) ~> routes ~> check {
       userDao.findByLowerCasedLogin("newUser").futureValue should be ('defined)
       status should be (StatusCodes.OK)
     }
@@ -56,6 +53,23 @@ class UsersRoutesSpec extends BaseRoutesSpec with TestHelpersWithDb { spec =>
     }
   }
 
+  def withLoggedInUser(login: String, password: String)(body: RequestTransformer => Unit) = {
+    Post("/users", Map("login" -> login, "password" -> password)) ~> routes ~> check {
+      status should be (StatusCodes.OK)
+
+      val Some(sessionCookie) = header[`Set-Cookie`]
+
+      body(addHeader(Cookie(sessionConfig.sessionCookieConfig.name, sessionCookie.cookie.value)))
+    }
+  }
+
+  "POST /" should "log in given valid credentials" in {
+    userDao.add(newUser("user3", "user3@sml.com", "pass", "salt")).futureValue
+    withLoggedInUser("user3", "pass") { _ =>
+      // ok
+    }
+  }
+
   "POST /" should "not log in given invalid credentials" in {
     userDao.add(newUser("user4", "user4@sml.com", "pass", "salt")).futureValue
     Post("/users", Map("login" -> "user4", "password" -> "hacker")) ~> routes ~> check {
@@ -64,48 +78,59 @@ class UsersRoutesSpec extends BaseRoutesSpec with TestHelpersWithDb { spec =>
   }
 
   "PATCH /" should "update email when email is given" in {
-    val user = newUser("user5", "user5@sml.com", "pass", "salt")
-    userDao.add(user).futureValue
+    userDao.add(newUser("user5", "user5@sml.com", "pass", "salt")).futureValue
     val email = "coolmail@awesome.rox"
 
-    Patch("/users", Map("userId" -> user.id.toString, "email" -> email)) ~> routes ~> check {
-      userDao.findByLowerCasedLogin("user5").futureValue.map(_.email) should be(Some(email))
-      status should be (StatusCodes.OK)
+    withLoggedInUser("user5", "pass") { transform =>
+      Patch("/users", Map("email" -> email)) ~> transform ~> routes ~> check {
+        userDao.findByLowerCasedLogin("user5").futureValue.map(_.email) should be(Some(email))
+        status should be (StatusCodes.OK)
+      }
     }
   }
 
   "PATCH /" should "update login when login is given" in {
-    val user = newUser("user6", "user6@sml.com", "pass", "salt")
-    userDao.add(user).futureValue
+    userDao.add(newUser("user6", "user6@sml.com", "pass", "salt")).futureValue
     val login = "user6_changed"
 
-    Patch("/users", Map("userId" -> user.id.toString, "login" -> login)) ~> routes ~> check {
-      userDao.findByLowerCasedLogin(login).futureValue should be ('defined)
-      status should be(StatusCodes.OK)
+    withLoggedInUser("user6", "pass") { transform =>
+      Patch("/users", Map("login" -> login)) ~> transform ~> routes ~> check {
+        userDao.findByLowerCasedLogin(login).futureValue should be ('defined)
+        status should be(StatusCodes.OK)
+      }
+    }
+  }
+
+  "PATCH /" should "result in an error when user is not authenticated" in {
+    Patch("/users", Map("email" -> "?")) ~> routes ~> check {
+      status should be (StatusCodes.Forbidden)
     }
   }
 
   "PATCH /" should "result in an error in neither email nor login is given" in {
-    val user = newUser("user7", "user7@sml.com", "pass", "salt")
-    userDao.add(user).futureValue
-    Patch("/users", Map("userId" -> user.id.toString)) ~> routes ~> check {
-      status should be (StatusCodes.Conflict)
+    userDao.add(newUser("user7", "user7@sml.com", "pass", "salt")).futureValue
+    withLoggedInUser("user7", "pass") { transform =>
+      Patch("/users", Map.empty[String, String]) ~> transform ~> routes ~> check {
+        status should be (StatusCodes.Conflict)
+      }
     }
   }
 
   "POST /changepassword" should "update password if current is correct and new is present" in {
-    val user = newUser("user8", "user8@sml.com", "pass", "salt")
-    userDao.add(user).futureValue
-    Post("/users/changepassword", Map("userId" -> user.id.toString, "currentPassword" -> "pass", "newPassword" -> "newPass")) ~> routes ~> check {
-      status should be (StatusCodes.OK)
+    userDao.add(newUser("user8", "user8@sml.com", "pass", "salt")).futureValue
+    withLoggedInUser("user8", "pass") { transform =>
+      Post("/users/changepassword", Map("currentPassword" -> "pass", "newPassword" -> "newPass")) ~> transform ~> routes ~> check {
+        status should be (StatusCodes.OK)
+      }
     }
   }
 
   "POST /changepassword" should "not update password if current is wrong" in {
-    val user = newUser("user9", "user9@sml.com", "pass", "salt")
-    userDao.add(user).futureValue
-    Post("/users/changepassword", Map("userId" -> user.id.toString ,"currentPassword" -> "hacker", "newPassword" -> "newPass")) ~> routes ~> check {
-      status should be (StatusCodes.Forbidden)
+    userDao.add(newUser("user9", "user9@sml.com", "pass", "salt")).futureValue
+    withLoggedInUser("user9", "pass") { transform =>
+      Post("/users/changepassword", Map("currentPassword" -> "hacker", "newPassword" -> "newPass")) ~> transform ~> routes ~> check {
+        status should be (StatusCodes.Forbidden)
+      }
     }
   }
 }

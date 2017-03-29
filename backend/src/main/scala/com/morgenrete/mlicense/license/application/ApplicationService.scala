@@ -1,7 +1,7 @@
 package com.morgenrete.mlicense.license.application
 
 import com.morgenrete.mlicense.license.ApplicationId
-import com.morgenrete.mlicense.license.domain.{Application, CreateApplication, UpdateApplication}
+import com.morgenrete.mlicense.license.domain.Application
 import com.morgenrete.mlicense.user.UserId
 
 import scala.concurrent.{ExecutionContext, Future}
@@ -15,11 +15,11 @@ class ApplicationService(applicationDao: ApplicationDao)(implicit val ec: Execut
     applicationDao.findById(applicationId)
   }
 
-  def create(app: CreateApplication): Future[CreateApplicationResult] = {
+  def create(app: Application): Future[CreateApplicationResult] = {
     checkApplicationExistence(app.name)(applicationDao.findByName).flatMap{
       case Left(_) => Future.successful(CreateApplicationResult.ApplicationExists)
       case Right(_) =>
-        val result = applicationDao.add(app.toApplication)
+        val result = applicationDao.add(app)
         result.map{_ => CreateApplicationResult.Success}
     }
   }
@@ -35,10 +35,10 @@ class ApplicationService(applicationDao: ApplicationDao)(implicit val ec: Execut
     applicationDao.delete(applicationId)
   }
 
-  def update(app: UpdateApplication): Future[UpdateApplicationResult] = {
+  def update(app: Application): Future[UpdateApplicationResult] = {
     checkApplicationExistence(app.id)(applicationDao.findById).flatMap{
       case Left(_) =>
-        val result = applicationDao.update(app.toApplication)
+        val result = applicationDao.update(app)
         result.map{_ => UpdateApplicationResult.Success}
       case Right(_) => Future.successful(UpdateApplicationResult.ApplicationNotExists)
     }
