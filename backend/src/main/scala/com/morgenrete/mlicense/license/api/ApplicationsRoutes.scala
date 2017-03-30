@@ -1,7 +1,5 @@
 package com.morgenrete.mlicense.license.api
 
-import java.util.UUID
-
 import akka.http.scaladsl.model.StatusCodes
 import akka.http.scaladsl.server.Directives._
 import com.morgenrete.mlicense.common.api.JsonSupport
@@ -41,11 +39,8 @@ trait ApplicationsRoutes extends JsonSupport with SessionSupport with StrictLogg
             }
           }
         } ~ get {
-          parameters('user) { userId =>
-            val id = UUID.fromString(userId)
-            onSuccess(applicationService.allForUser(id)) { apps =>
-              complete(apps.toList)
-            }
+          onSuccess(applicationService.allForUser(userId)) { apps =>
+            complete(apps.toList)
           }
         } ~ patch {
           entity(as[UpdateApplication]) { in =>
