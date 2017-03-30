@@ -21,10 +21,10 @@ class CustomerServiceSpec extends FlatSpecWithDb with Matchers with TestHelpersW
   "create" should "create customer with name that not exists" in {
     //given
     val name = "cus3"
-    val cusCreate = newCreateCustomer(name, user.id)
+    val cusCreate = newCreateCustomer(name)
 
     //when
-    val result = customerService.create(cusCreate).futureValue
+    val result = customerService.create(cusCreate.toCustomer(user.id)).futureValue
 
     //then
     result should be (CreateCustomerResult.Success)
@@ -35,10 +35,10 @@ class CustomerServiceSpec extends FlatSpecWithDb with Matchers with TestHelpersW
     //given
     val newName = "cus3_new"
     val customer = newRandomStoredCustomer(user.id)
-    val updateCustomer = newUpdateCustomer(newName, user.id, Some(customer.id))
+    val updateCustomer = newUpdateCustomer(newName, Some(customer.id))
 
     //when
-    val result = customerService.update(updateCustomer).futureValue
+    val result = customerService.update(updateCustomer.toCustomer(user.id)).futureValue
 
     //then
     result should be (UpdateCustomerResult.Success)
@@ -51,10 +51,10 @@ class CustomerServiceSpec extends FlatSpecWithDb with Matchers with TestHelpersW
     //given
     val newName = "cus3_new"
     val customer = newRandomStoredCustomer(user.id)
-    val updateCustomer = newUpdateCustomer(newName, user.id)
+    val updateCustomer = newUpdateCustomer(newName)
 
     //when
-    val result = customerService.update(updateCustomer).futureValue
+    val result = customerService.update(updateCustomer.toCustomer(user.id)).futureValue
 
     //then
     result should be(UpdateCustomerResult.CustomerNotExists)

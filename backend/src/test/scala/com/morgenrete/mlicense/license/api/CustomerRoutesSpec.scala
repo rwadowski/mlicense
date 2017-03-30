@@ -6,24 +6,23 @@ import akka.http.scaladsl.model.StatusCodes
 import akka.http.scaladsl.model.headers.{Cookie, `Set-Cookie`}
 import akka.http.scaladsl.server.Directives._
 import akka.http.scaladsl.server.Route
-import com.morgenrete.mlicense.license.application.ApplicationService
+import com.morgenrete.mlicense.license.application.CustomerService
 import com.morgenrete.mlicense.test.{BaseRoutesSpec, TestHelpersWithDb}
 import com.morgenrete.mlicense.user.api.UsersRoutes
 import com.morgenrete.mlicense.user.application.UserService
-
 /**
-  * Created by rwadowski on 29.03.17.
+  * Created by rwadowski on 31.03.17.
   */
-class ApplicationsRoutesSpec extends BaseRoutesSpec with TestHelpersWithDb {
+class CustomerRoutesSpec extends BaseRoutesSpec with TestHelpersWithDb {
   spec =>
 
-  val server = new ApplicationsRoutes with UsersRoutes with TestRoutesSupport {
-    override val applicationService: ApplicationService = spec.applicationService
+  val server = new CustomersRoutes with UsersRoutes with TestRoutesSupport {
+    override val customerService: CustomerService = spec.customerService
     override val userService: UserService = spec.userService
   }
 
   val routes = Route.seal(
-    server.applicationsRoutes ~
+    server.customersRoutes ~
     server.usersRoutes
   )
 
@@ -37,92 +36,92 @@ class ApplicationsRoutesSpec extends BaseRoutesSpec with TestHelpersWithDb {
     }
   }
 
-  "POST /applications" should "create new application if there is no application with given name" in {
+  "POST /customers" should "create new customer if there is no customer with given name" in {
     val user = newUser("user1", "user1@sml.com", "pass", "salt")
     userDao.add(user).futureValue
-    val appName = "MyApp"
+    val customerName = "MyApp"
     withLoggedInUser("user1", "pass") { transform =>
-      Post("/applications", Map("name" -> appName)) ~> transform ~> routes ~> check {
-        applicationDao.findByName(appName).futureValue should be ('defined)
+      Post("/customers", Map("name" -> customerName)) ~> transform ~> routes ~> check {
+        customerDao.findByName(customerName).futureValue should be ('defined)
         status should be (StatusCodes.OK)
       }
     }
   }
 
-  "POST /applications" should "not create new application if there is an app" in {
+  "POST /customers" should "not create new customer if there is customer with given name" in {
     val user = newUser("user1", "user1@sml.com", "pass", "salt")
     userDao.add(user).futureValue
-    val app = newRandomStoredApplication(user.id)
+    val customer = newRandomStoredCustomer(user.id)
     withLoggedInUser("user1", "pass") { transform =>
-      Post("/applications", Map("name" -> app.name)) ~> transform ~> routes ~> check {
+      Post("/customers", Map("name" -> customer.name)) ~> transform ~> routes ~> check {
         status should be (StatusCodes.Conflict)
       }
     }
   }
 
-  "GET /applications" should "fetch all customers for user" in {
+  "GET /customers" should "fetch all customers for user" in {
     val user1 = newUser("user1", "user1@sml.com", "pass", "salt")
     userDao.add(user1).futureValue
     val user2 = newUser("user2", "user2@sml.com", "pass2", "salt2")
     userDao.add(user2).futureValue
-    val app1 = newRandomStoredApplication(user1.id)
-    val app2 = newRandomStoredApplication(user1.id)
-    val app3 = newRandomStoredApplication(user2.id)
+    val cus1 = newRandomStoredCustomer(user1.id)
+    val cus2 = newRandomStoredCustomer(user1.id)
+    val cus3 = newRandomStoredCustomer(user2.id)
     withLoggedInUser("user1", "pass") { transform =>
-      Get("/applications") ~> transform ~> routes ~> check {
-        val expected = s"""[{"id":"${app1.id.toString}","name":"${app1.name}","userId":"${app1.userId.toString}"},{"id":"${app2.id.toString}","name":"${app2.name}","userId":"${app2.userId.toString}"}]"""
+      Get("/customers") ~> transform ~> routes ~> check {
+        val expected = s"""[{"id":"${cus1.id.toString}","name":"${cus1.name}","userId":"${cus1.userId.toString}"},{"id":"${cus2.id.toString}","name":"${cus2.name}","userId":"${cus2.userId.toString}"}]"""
         responseAs[String] shouldEqual expected
         status should be (StatusCodes.OK)
       }
     }
   }
 
-  "PATCH /applications" should "update application that exists" in {
+  "PATCH /customers" should "update customer that exists" in {
     val user = newUser("user1", "user1@sml.com", "pass", "salt")
     userDao.add(user).futureValue
     val newName = "app_name"
-    val app = newRandomStoredApplication(user.id)
+    val cus = newRandomStoredCustomer(user.id)
     withLoggedInUser("user1", "pass") { transform =>
-      Patch("/applications", Map("id" -> app.id.toString, "name" -> newName, "userId" -> user.id.toString)) ~> transform ~> routes ~> check {
-        val res = applicationDao.findById(app.id).futureValue
-        val expected = app.copy(name = newName)
+      Patch("/customers", Map("id" -> cus.id.toString, "name" -> newName, "userId" -> user.id.toString)) ~> transform ~> routes ~> check {
+        val res = customerDao.findById(cus.id).futureValue
+        val expected = cus.copy(name = newName)
         res should be ('defined)
         res shouldEqual Some(expected)
       }
     }
   }
 
-  "PATCH /applications" should "not update application that not exists" in {
+  "PATCH /customers" should "not update customer that not exists" in {
     val user = newUser("user1", "user1@sml.com", "pass", "salt")
     userDao.add(user).futureValue
-    val newName = "app_name"
-    val app = newRandomApplication(user.id)
+    val newName = "cus_name"
+    val cus = newRandomCustomer(user.id)
     withLoggedInUser("user1", "pass") { transform =>
-      Patch("/applications", Map("id" -> app.id.toString, "name" -> newName, "userId" -> user.id.toString)) ~> transform ~> routes ~> check {
+      Patch("/customers", Map("id" -> cus.id.toString, "name" -> newName, "userId" -> user.id.toString)) ~> transform ~> routes ~> check {
         status shouldEqual (StatusCodes.Conflict)
       }
     }
   }
 
-  "GET /applications/:id" should "fetch particular application if exists" in {
+  "GET /customers/:id" should "fetch particular customers if exists" in {
     val user = newUser("user1", "user1@sml.com", "pass", "salt")
     userDao.add(user).futureValue
-    val app1 = newRandomStoredApplication(user.id)
+    val cus1 = newRandomStoredCustomer(user.id)
     withLoggedInUser("user1", "pass") { transform =>
-      val path = s"/applications/${app1.id.toString}"
+      val path = s"/customers/${cus1.id.toString}"
       Get(path) ~> transform ~> routes ~> check {
-        val expected = s"""{"id":"${app1.id.toString}","name":"${app1.name}","userId":"${app1.userId.toString}"}"""
+        val expected = s"""{"id":"${cus1.id.toString}","name":"${cus1.name}","userId":"${cus1.userId.toString}"}"""
         responseAs[String] shouldEqual expected
       }
     }
   }
 
-  "GET /applications/:id" should "not fetch particular application if not exists" in {
+  "GET /customers/:id" should "not fetch particular customer if not exists" in {
     val user = newUser("user1", "user1@sml.com", "pass", "salt")
     userDao.add(user).futureValue
-    val appId = UUID.randomUUID().toString
+    val cusId = UUID.randomUUID().toString
     withLoggedInUser("user1", "pass") { transform =>
-      val path = s"/applications/$appId"
+      val path = s"/customers/$cusId"
       Get(path) ~> transform ~> routes ~> check {
         status shouldEqual (StatusCodes.NotFound)
       }

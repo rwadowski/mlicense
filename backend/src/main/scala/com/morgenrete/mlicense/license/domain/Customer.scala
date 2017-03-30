@@ -14,12 +14,12 @@ object Customer {
   def withRandomUUID(name: String, userId: UserId): Customer = Customer(UUID.randomUUID(), name, userId)
 }
 
-case class CreateCustomer(name: String, userId: UserId) {
+case class CreateCustomer(name: String) {
 
-  lazy val toCustomer: Customer = Customer.withRandomUUID(name, userId)
+  def toCustomer(userId: UserId): Customer = Customer.withRandomUUID(name, userId)
 }
 
-case class UpdateCustomer(id: CustomerId, name: String, userId: UserId) {
+case class UpdateCustomer(id: CustomerId, name: String) {
 
-  lazy val toCustomer: Customer = Customer(id, name, userId)
+  def toCustomer(userId: UserId): Customer = Customer(id, name, userId)
 }

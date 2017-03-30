@@ -15,8 +15,13 @@ class CustomerService(customerDao: CustomerDao)(implicit val ec: ExecutionContex
     customerDao.findById(customerId)
   }
 
-  def create(customer: CreateCustomer): Future[CreateCustomerResult] = {
-    customerDao.add(customer.toCustomer).map{_ => CreateCustomerResult.Success}
+  def create(customer: Customer): Future[CreateCustomerResult] = {
+    checkCustomerExistence(customer.name)(customerDao.findByName).flatMap {
+      case Left(_) => Future.successful(CreateCustomerResult.CustomerExists)
+      case Right(_) =>
+        val res = customerDao.add(customer)
+        res.map{_ => CreateCustomerResult.Success}
+    }
   }
 
   private def checkCustomerExistence[T](criteria: T)(method: T => Future[Option[Customer]]): Future[Either[String, Unit]] = {
@@ -30,10 +35,10 @@ class CustomerService(customerDao: CustomerDao)(implicit val ec: ExecutionContex
     customerDao.delete(customerId)
   }
 
-  def update(customer: UpdateCustomer): Future[UpdateCustomerResult] = {
+  def update(customer: Customer): Future[UpdateCustomerResult] = {
     checkCustomerExistence(customer.id)(customerDao.findById).flatMap{
       case Left(_) =>
-        val result = customerDao.update(customer.toCustomer)
+        val result = customerDao.update(customer)
         result.map{_ => UpdateCustomerResult.Success}
       case Right(_) => Future.successful(UpdateCustomerResult.CustomerNotExists)
     }
