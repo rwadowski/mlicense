@@ -2,6 +2,7 @@ package com.morgenrete.mlicense.test
 
 import com.morgenrete.mlicense.common.sql.SqlDatabase
 import com.morgenrete.mlicense.email.application.{DummyEmailService, EmailTemplatingEngine}
+import com.morgenrete.mlicense.license.{ApplicationId, CustomerId}
 import com.morgenrete.mlicense.license.application._
 import com.morgenrete.mlicense.license.domain.{Application, Customer, License}
 import com.morgenrete.mlicense.user.UserId
@@ -52,6 +53,14 @@ trait TestHelpersWithDb extends TestHelpers with ScalaFutures {
     val c = newRandomStoredCustomer(u.id)
     val a = newRandomStoredApplication(u.id)
     val l = newRandomLicense(u.id, a.id, c.id)
+    licenseDao.add(l).futureValue
+    l
+  }
+
+  def newStoredLicense(userId: UserId,
+                       applicationId: ApplicationId,
+                       customerId: CustomerId): License = {
+    val l = newRandomLicense(userId, applicationId, customerId)
     licenseDao.add(l).futureValue
     l
   }

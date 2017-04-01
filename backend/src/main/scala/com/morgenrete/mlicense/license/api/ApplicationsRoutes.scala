@@ -2,10 +2,9 @@ package com.morgenrete.mlicense.license.api
 
 import akka.http.scaladsl.model.StatusCodes
 import akka.http.scaladsl.server.Directives._
-import com.morgenrete.mlicense.common.api.JsonSupport
+import com.morgenrete.mlicense.common.api.{JsonSupport, SessionSupport}
 import com.morgenrete.mlicense.license.application.{ApplicationService, CreateApplicationResult, UpdateApplicationResult}
 import com.morgenrete.mlicense.license.domain.{Application, CreateApplication, UpdateApplication}
-import com.morgenrete.mlicense.user.api.SessionSupport
 import com.typesafe.scalalogging.StrictLogging
 import io.circe.generic.auto._
 

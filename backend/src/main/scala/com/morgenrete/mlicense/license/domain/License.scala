@@ -9,43 +9,46 @@ import com.morgenrete.mlicense.user.UserId
 /**
   * Created by rwadowski on 20.03.17.
   */
-//TODO true/false -> class
+//TODO true/false -> case class
 case class License(id: LicenseId,
                    userId: UserId,
                    applicationId: ApplicationId,
                    customerId: CustomerId,
                    active: Boolean,
-                   expirationDate: OffsetDateTime)
+                   expirationDate: OffsetDateTime,
+                   name: String)
 
 object License {
   def withRandomUUID(userId: UserId,
                      applicationId: ApplicationId,
                      customerId: CustomerId,
                      active: Boolean,
-                     expirationDate: OffsetDateTime): License =
+                     expirationDate: OffsetDateTime,
+                     name: String): License =
     License(UUID.randomUUID(),
             userId,
             applicationId,
             customerId,
             active,
-            expirationDate)
+            expirationDate,
+            name)
 }
 
-case class CreateLicense(userId: UserId,
-                         applicationId: ApplicationId,
+case class CreateLicense(applicationId: ApplicationId,
                          customerId: CustomerId,
                          active: Boolean,
-                         expirationDate: OffsetDateTime) {
+                         expirationDate: OffsetDateTime,
+                         name: String) {
 
-  lazy val toLicense: License = License.withRandomUUID(userId, applicationId, customerId, active, expirationDate)
+  def toLicense(userId: UserId): License = License.withRandomUUID(userId, applicationId, customerId, active, expirationDate, name)
 }
 
 case class UpdateLicense(id: LicenseId,
-                         userId: UserId,
                          applicationId: ApplicationId,
                          customerId: CustomerId,
                          active: Boolean,
-                         expirationDate: OffsetDateTime) {
+                         expirationDate: OffsetDateTime,
+                         name: String) {
 
-  lazy val toLicense: License =  License(id, userId, applicationId, customerId, active, expirationDate)
+  def toLicense(userId: UserId): License = License(id, userId, applicationId, customerId, active, expirationDate, name)
 }

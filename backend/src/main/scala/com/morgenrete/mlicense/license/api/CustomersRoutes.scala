@@ -2,10 +2,9 @@ package com.morgenrete.mlicense.license.api
 
 import akka.http.scaladsl.model.StatusCodes
 import akka.http.scaladsl.server.Directives._
-import com.morgenrete.mlicense.common.api.JsonSupport
+import com.morgenrete.mlicense.common.api.{JsonSupport, SessionSupport}
 import com.morgenrete.mlicense.license.application.{CreateCustomerResult, CustomerService, UpdateCustomerResult}
 import com.morgenrete.mlicense.license.domain.{CreateCustomer, Customer, UpdateCustomer}
-import com.morgenrete.mlicense.user.api.SessionSupport
 import com.typesafe.scalalogging.StrictLogging
 import io.circe.generic.auto._
 
@@ -49,11 +48,9 @@ trait CustomersRoutes extends JsonSupport with SessionSupport with StrictLogging
               case UpdateCustomerResult.CustomerNotExists => complete(StatusCodes.Conflict, "there is no such customer")
               case _ => complete(StatusCodes.InternalServerError)
             }
-
           }
         }
       }
     }
-
   }
 }

@@ -52,32 +52,33 @@ trait TestHelpers {
                  applicationId: ApplicationId,
                  customerId: CustomerId,
                  active: Boolean,
-                 expirationDate: OffsetDateTime): License = License.withRandomUUID(userId, applicationId, customerId, active, expirationDate)
+                 expirationDate: OffsetDateTime,
+                 name: String): License = License.withRandomUUID(userId, applicationId, customerId, active, expirationDate, name)
 
   def newRandomLicense(userId: UserId,
                        applicationId: ApplicationId,
-                       customerId: CustomerId): License = License.withRandomUUID(userId, applicationId, customerId, true, validExpirationDate(100))
+                       customerId: CustomerId): License = License.withRandomUUID(userId, applicationId, customerId, true, validExpirationDate(100), randomString())
 
-  def newCreateLicense(userId: UserId,
-                       applicationId: ApplicationId,
+  def newCreateLicense(applicationId: ApplicationId,
                        customerId: CustomerId,
                        active: Boolean,
-                       expirationDate: OffsetDateTime): CreateLicense = CreateLicense(userId,
-                                                                                      applicationId,
+                       expirationDate: OffsetDateTime): CreateLicense = CreateLicense(applicationId,
                                                                                       customerId,
                                                                                       active,
-                                                                                      expirationDate)
+                                                                                      expirationDate,
+                                                                                      randomString())
 
   def newUpdateLicense(licenseId: LicenseId,
-                       userId: UserId,
                        applicationId: ApplicationId,
                        customerId: CustomerId,
                        active: Boolean,
-                       expirationDate: OffsetDateTime): UpdateLicense = UpdateLicense(licenseId, userId,
-                                                                                      applicationId,
-                                                                                      customerId,
-                                                                                      active,
-                                                                                      expirationDate)
+                       expirationDate: OffsetDateTime,
+                       name: String): UpdateLicense = UpdateLicense(licenseId,
+                                                                    applicationId,
+                                                                    customerId,
+                                                                    active,
+                                                                    expirationDate,
+                                                                    name)
 
   def validExpirationDate(days: Int): OffsetDateTime = OffsetDateTime.now(ZoneOffset.UTC).plusDays(days)
   def invalidExpirationDate(days: Int): OffsetDateTime = OffsetDateTime.now(ZoneOffset.UTC).minusDays(days)

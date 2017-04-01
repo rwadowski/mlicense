@@ -13,7 +13,7 @@ import com.morgenrete.mlicense.user.application.UserService
 /**
   * Created by rwadowski on 31.03.17.
   */
-class CustomerRoutesSpec extends BaseRoutesSpec with TestHelpersWithDb {
+class CustomersRoutesSpec extends BaseRoutesSpec with TestHelpersWithDb {
   spec =>
 
   val server = new CustomersRoutes with UsersRoutes with TestRoutesSupport {
@@ -39,10 +39,10 @@ class CustomerRoutesSpec extends BaseRoutesSpec with TestHelpersWithDb {
   "POST /customers" should "create new customer if there is no customer with given name" in {
     val user = newUser("user1", "user1@sml.com", "pass", "salt")
     userDao.add(user).futureValue
-    val customerName = "MyApp"
+    val cus1 = newRandomCustomer(user.id)
     withLoggedInUser("user1", "pass") { transform =>
-      Post("/customers", Map("name" -> customerName)) ~> transform ~> routes ~> check {
-        customerDao.findByName(customerName).futureValue should be ('defined)
+      Post("/customers", Map("name" -> cus1.name)) ~> transform ~> routes ~> check {
+        customerDao.findByName(cus1.name).futureValue should be ('defined)
         status should be (StatusCodes.OK)
       }
     }

@@ -4,8 +4,7 @@ import akka.http.scaladsl.model.StatusCodes
 import akka.http.scaladsl.server.AuthorizationFailedRejection
 import akka.http.scaladsl.server.Directives._
 import com.morgenrete.mlicense.common.Utils
-import com.morgenrete.mlicense.common.api.JsonSupport
-import com.morgenrete.mlicense.user.UserId
+import com.morgenrete.mlicense.common.api.{JsonSupport, SessionSupport}
 import com.morgenrete.mlicense.user.application.{Session, UserRegisterResult, UserService}
 import com.morgenrete.mlicense.user.domain.BasicUserData
 import com.typesafe.scalalogging.StrictLogging

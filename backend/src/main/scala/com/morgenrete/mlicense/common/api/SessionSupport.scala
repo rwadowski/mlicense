@@ -1,4 +1,4 @@
-package com.morgenrete.mlicense.user.api
+package com.morgenrete.mlicense.common.api
 
 import akka.http.scaladsl.server.Directives._
 import akka.http.scaladsl.server._

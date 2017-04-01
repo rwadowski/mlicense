@@ -1,23 +1,21 @@
 package com.morgenrete.mlicense.common.api
 
 import akka.http.scaladsl.marshalling._
-import akka.http.scaladsl.model._
-import akka.http.scaladsl.model.headers.CacheDirectives._
+import akka.http.scaladsl.model.headers.CacheDirectives.{`max-age`, `must-revalidate`, `no-cache`, `no-store`, _}
 import akka.http.scaladsl.model.headers.{`Cache-Control`, `Last-Modified`, _}
-import akka.http.scaladsl.model.headers.CacheDirectives.{`max-age`, `must-revalidate`, `no-cache`, `no-store`}
-import akka.http.scaladsl.model.headers.{`Cache-Control`, `Last-Modified`}
 import akka.http.scaladsl.model.{HttpCharsets, MediaTypes}
 import akka.http.scaladsl.server.Directive1
 import akka.http.scaladsl.server.Directives.{pathSuffixTest, respondWithHeaders}
 import akka.http.scaladsl.unmarshalling.{FromEntityUnmarshaller, Unmarshaller}
 import akka.stream.Materializer
-import io.circe._
-import io.circe.jawn.decode
 import com.morgenrete.mlicense.common.api.`X-Content-Type-Options`.`nosniff`
 import com.morgenrete.mlicense.common.api.`X-Frame-Options`.`DENY`
 import com.morgenrete.mlicense.common.api.`X-XSS-Protection`.`1; mode=block`
+import io.circe._
+import io.circe.jawn.decode
 
-trait JsonSupport extends CirceEncoders {
+trait JsonSupport extends CirceEncoders
+{
 
   implicit def materializer: Materializer
 

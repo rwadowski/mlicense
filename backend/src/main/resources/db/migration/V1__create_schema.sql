@@ -59,7 +59,8 @@ CREATE TABLE "licenses" (
   "application_id" UUID NOT NULL,
   "customer_id" UUID NOT NULL,
   "active" BOOLEAN DEFAULT FALSE,
-  "expiration_date" TIMESTAMP
+  "expiration_date" TIMESTAMP,
+  "name" VARCHAR
 );
 
 ALTER TABLE "licenses" ADD CONSTRAINT "license_id" PRIMARY KEY("id");

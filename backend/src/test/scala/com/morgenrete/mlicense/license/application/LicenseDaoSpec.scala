@@ -19,7 +19,7 @@ class LicenseDaoSpec extends FlatSpecWithDb with StrictLogging with TestHelpersW
     val customer = newRandomStoredCustomer(user.id)
     val application = newRandomStoredApplication(user.id)
 
-    val license = License.withRandomUUID(user.id, application.id, customer.id, true, currentOffsetDateTime)
+    val license = License.withRandomUUID(user.id, application.id, customer.id, true, currentOffsetDateTime, "name")
 
     //When
     licenseDao.add(license).futureValue
@@ -34,7 +34,7 @@ class LicenseDaoSpec extends FlatSpecWithDb with StrictLogging with TestHelpersW
     val customer = newRandomStoredCustomer(user.id)
     val application = newRandomStoredApplication(user.id)
 
-    val license = License.withRandomUUID(user.id, application.id, customer.id, true, currentOffsetDateTime)
+    val license = License.withRandomUUID(user.id, application.id, customer.id, true, currentOffsetDateTime, "name")
 
     //When
     licenseDao.add(license).futureValue
@@ -50,7 +50,7 @@ class LicenseDaoSpec extends FlatSpecWithDb with StrictLogging with TestHelpersW
     val customer = newRandomStoredCustomer(user.id)
     val application = newRandomStoredApplication(user.id)
 
-    val license = License.withRandomUUID(user.id, application.id, customer.id, true, currentOffsetDateTime)
+    val license = License.withRandomUUID(user.id, application.id, customer.id, true, currentOffsetDateTime, "name")
     val newExpirationDate = validExpirationDate(10) //ten days from now it will expire
     val modifiedLicense = license.copy(expirationDate =  newExpirationDate)
 

@@ -25,6 +25,8 @@ class LicenseDao(protected val database: SqlDatabase)(implicit val ec: Execution
 
   def findById(licenseId: LicenseId): Future[Option[License]] = db.run(licenses.filter(_.id === licenseId).result.headOption)
 
+  def findByName(name: String): Future[Option[License]] = db.run(licenses.filter(_.name === name).result.headOption)
+
   def delete(licenseId: LicenseId): Future[Unit] = db.run(licenses.filter(_.id === licenseId).delete).mapToUnit
 
   def update(license: License): Future[Option[License]] = db.run(licenses.filter(l => l.id === license.id && l.userId === license.userId).update(license)).map{
@@ -53,11 +55,12 @@ trait SqlLicenseSchema {
     def customerId        = column[UUID]("customer_id")
     def active            = column[Boolean]("active")
     def expirationDate    = column[OffsetDateTime]("expiration_date")
+    def name              = column[String]("name")
 
     def user              = foreignKey("license_user_id_fk", userId, users)(_.id, onUpdate=ForeignKeyAction.Restrict, onDelete=ForeignKeyAction.Cascade)
     def application       = foreignKey("license_application_id_fk", applicationId, applications)(_.id, onUpdate=ForeignKeyAction.Restrict, onDelete=ForeignKeyAction.Cascade)
     def customer          = foreignKey("license_customer_id_fk", customerId, customers)(_.id, onUpdate=ForeignKeyAction.Restrict, onDelete=ForeignKeyAction.Cascade)
 
-    def * = (id, userId, applicationId, customerId, active, expirationDate) <> ((License.apply _).tupled, License.unapply)
+    def * = (id, userId, applicationId, customerId, active, expirationDate, name) <> ((License.apply _).tupled, License.unapply)
   }
 }

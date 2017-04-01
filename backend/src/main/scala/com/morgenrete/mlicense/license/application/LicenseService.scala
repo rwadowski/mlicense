@@ -15,8 +15,8 @@ class LicenseService(licenseDao: LicenseDao)(implicit val ec: ExecutionContext) 
     licenseDao.findById(licenseId)
   }
 
-  def create(license: CreateLicense): Future[CreateLicenseResult] = {
-    licenseDao.add(license.toLicense).map{_ => CreateLicenseResult.Success}
+  def create(license: License): Future[CreateLicenseResult] = {
+    licenseDao.add(license).map{_ => CreateLicenseResult.Success}
   }
 
   private def checkLicenseExistence[T](criteria: T)(method: T => Future[Option[License]]): Future[Either[String, Unit]] = {
@@ -26,10 +26,10 @@ class LicenseService(licenseDao: LicenseDao)(implicit val ec: ExecutionContext) 
     }
   }
 
-  def update(lic: UpdateLicense): Future[UpdateLicenseResult] = {
-    checkLicenseExistence(lic.id)(licenseDao.findById).flatMap{
+  def update(license: License): Future[UpdateLicenseResult] = {
+    checkLicenseExistence(license.id)(licenseDao.findById).flatMap{
       case Left(_) =>
-        val result = licenseDao.update(lic.toLicense)
+        val result = licenseDao.update(license)
         result.map{_ => UpdateLicenseResult.Success}
       case Right(_) => Future.successful(UpdateLicenseResult.LicenseNotExists)
     }

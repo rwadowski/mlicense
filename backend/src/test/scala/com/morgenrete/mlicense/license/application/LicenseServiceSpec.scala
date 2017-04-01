@@ -24,8 +24,8 @@ class LicenseServiceSpec extends FlatSpecWithDb with Matchers with TestHelpersWi
     customerDao.add(customer1).futureValue
     customerDao.add(customer2).futureValue
     applicationDao.add(application).futureValue
-    val license1 = License.withRandomUUID(user.id, application.id, customer1.id, true, currentOffsetDateTime)
-    val license2 = License.withRandomUUID(user.id, application.id, customer2.id, true, currentOffsetDateTime)
+    val license1 = License.withRandomUUID(user.id, application.id, customer1.id, true, currentOffsetDateTime, "name")
+    val license2 = License.withRandomUUID(user.id, application.id, customer2.id, true, currentOffsetDateTime, "name")
     licenseDao.add(license1).futureValue
     licenseDao.add(license2).futureValue
   }
@@ -33,42 +33,42 @@ class LicenseServiceSpec extends FlatSpecWithDb with Matchers with TestHelpersWi
   "create" should "create license" in {
     //given
     val customer3 = newRandomStoredCustomer(user.id)
-    val licCreate = newCreateLicense(user.id, application.id, customer3.id, true, validExpirationDate(2))
+    val licCreate = newCreateLicense(application.id, customer3.id, true, validExpirationDate(2))
 
     //when
-    val result = licenseService.create(licCreate).futureValue
+    val result = licenseService.create(licCreate.toLicense(user.id)).futureValue
 
     //then
     result should be (CreateLicenseResult.Success)
-    licenseService.findById(licCreate.toLicense.id).futureValue should be ('defined)
+    licenseService.findById(licCreate.toLicense(user.id).id).futureValue should be ('defined)
   }
 
   "update" should "update existing licenses" in {
     //given
     val license = newRandomStoredLicense(Some(user))
-    val updateLicense = newUpdateLicense(license.id, license.userId, license.applicationId, license.customerId, false, license.expirationDate)
+    val updateLicense = newUpdateLicense(license.id, license.applicationId, license.customerId, false, license.expirationDate, "name")
 
     //when
-    val result = licenseService.update(updateLicense).futureValue
+    val result = licenseService.update(updateLicense.toLicense(user.id)).futureValue
 
     //then
     result should be (UpdateLicenseResult.Success)
     licenseDao.findById(license.id).futureValue should be ('defined)
-    val expected = Some(License(license.id, license.userId, license.applicationId, license.customerId, false, license.expirationDate))
+    val expected = Some(License(license.id, license.userId, license.applicationId, license.customerId, false, license.expirationDate, "name"))
     licenseDao.findById(license.id).futureValue shouldEqual expected
   }
 
   "update" should "fail during update non existing applications" in {
     //given
     val license = newRandomStoredLicense(Some(user))
-    val updateLicense = newUpdateLicense(UUID.randomUUID(), license.userId, license.applicationId, license.customerId, false, validExpirationDate(1))
+    val updateLicense = newUpdateLicense(UUID.randomUUID(), license.applicationId, license.customerId, false, validExpirationDate(1), "name")
 
     //when
-    val result = licenseService.update(updateLicense).futureValue
+    val result = licenseService.update(updateLicense.toLicense(user.id)).futureValue
 
     //then
     result should be (UpdateLicenseResult.LicenseNotExists)
     licenseDao.findById(license.id).futureValue should be ('defined)
-    licenseDao.findById(updateLicense.toLicense.id).futureValue should not be ('defined)
+    licenseDao.findById(updateLicense.toLicense(user.id).id).futureValue should not be ('defined)
   }
 }
