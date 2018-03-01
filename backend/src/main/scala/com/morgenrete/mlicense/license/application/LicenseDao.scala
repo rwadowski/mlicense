@@ -34,6 +34,14 @@ class LicenseDao(protected val database: SqlDatabase)(implicit val ec: Execution
     case _ => Some(license)
   }
 
+//  def update(license: License): Future[Option[License]] = {
+//    val map = licenses.filter(l => l.id === license.id && l.userId === license.userId).map(l => (l.active, l.name, l.expirationDate))
+//    db.run(map.update(license.active, license.name, license.expirationDate)).map {
+//      case 0 => None
+//      case _ => Some(license)
+//    }
+//  }
+
   def allForUser(userId: UserId): Future[Seq[License]] = db.run(licenses.filter(_.userId === userId).result)
 }
 

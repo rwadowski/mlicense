@@ -1,5 +1,6 @@
 package com.morgenrete.mlicense.license.api
 
+import java.time.format.DateTimeFormatter
 import java.util.UUID
 
 import akka.http.scaladsl.model.StatusCodes
@@ -136,7 +137,8 @@ class LicensesRoutesSpec extends BaseRoutesSpec with TestHelpersWithDb {
     withLoggedInUser("user1", "pass") { transform =>
       val path = s"/licenses/${lic.id.toString}"
       Get(path) ~> transform ~> routes ~> check {
-        val expected = s"""{"id":"${lic.id.toString}","userId":"${lic.userId.toString}","applicationId":"${lic.applicationId.toString}","customerId":"${lic.customerId.toString}","active":true,"expirationDate":"${lic.expirationDate.toString}","name":"${lic.name}"}"""
+        val expirationDate = DateTimeFormatter.ISO_INSTANT.format(lic.expirationDate)
+        val expected = s"""{"id":"${lic.id.toString}","userId":"${lic.userId.toString}","applicationId":"${lic.applicationId.toString}","customerId":"${lic.customerId.toString}","active":true,"expirationDate":"$expirationDate","name":"${lic.name}"}"""
         responseAs[String] shouldEqual expected
       }
     }

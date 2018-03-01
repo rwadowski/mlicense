@@ -7,7 +7,7 @@ import org.scalatest.concurrent.{IntegrationPatience, ScalaFutures}
 trait FlatSpecWithDb extends FlatSpec with Matchers with BeforeAndAfterAll with BeforeAndAfterEach with ScalaFutures
     with IntegrationPatience {
 
-  private val connectionString = "jdbc:h2:mem:mlicense_test" + this.getClass.getSimpleName + ";DB_CLOSE_DELAY=-1"
+  private val connectionString = "jdbc:h2:mem:mlicense_test" + this.getClass.getSimpleName + ";DATABASE_TO_UPPER=false;DB_CLOSE_DELAY=-1"
   val sqlDatabase = SqlDatabase.createEmbedded(connectionString)
 
   override protected def beforeAll() {

@@ -5,7 +5,7 @@ import com.typesafe.sbt.SbtNativePackager.packageArchetype
 val slf4jVersion = "1.7.21"
 val logBackVersion = "1.1.7"
 val scalaLoggingVersion = "3.5.0"
-val slickVersion = "3.1.1"
+val slickVersion = "3.2.1"
 val seleniumVersion = "2.53.0"
 val circeVersion = "0.6.1"
 val akkaVersion = "2.4.16"
@@ -32,7 +32,7 @@ val postgres = "org.postgresql" % "postgresql" % "9.4.1208"
 val flyway = "org.flywaydb" % "flyway-core" % "4.0"
 val slickStack = Seq(slick, h2, postgres, slickHikari, flyway)
 
-val scalatest = "org.scalatest" %% "scalatest" % "2.2.6" % "test"
+val scalatest = "org.scalatest" %% "scalatest" % "3.0.5" % "test"
 val unitTestingStack = Seq(scalatest)
 
 val seleniumJava = "org.seleniumhq.selenium" % "selenium-java" % seleniumVersion % "test"
@@ -51,7 +51,7 @@ lazy val updateNpm = taskKey[Unit]("Update npm")
 lazy val npmTask = inputKey[Unit]("Run npm with arguments")
 
 lazy val commonSettings = Seq(
-  scalaVersion := "2.11.8",
+  scalaVersion := "2.12.4",
   scalacOptions ++= Seq("-unchecked", "-deprecation"),
   libraryDependencies ++= commonDependencies,
   parallelExecution in Test := false,
